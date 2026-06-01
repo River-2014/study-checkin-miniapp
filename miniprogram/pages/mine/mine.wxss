@@ -1,0 +1,263 @@
+/* ===== 我的页样式 ===== */
+.mine-page {
+  padding-bottom: 30rpx;
+}
+
+/* ===== 统计卡片 ===== */
+.stat-row {
+  display: flex;
+  justify-content: space-around;
+}
+
+.stat-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stat-value {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #FF9F43;
+}
+
+.stat-desc {
+  font-size: 24rpx;
+  color: #636E72;
+}
+
+/* ===== 卡片内容 ===== */
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #2D3436;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.danger-title {
+  color: #FF6B6B;
+}
+
+/* ===== 徽章网格 ===== */
+.badge-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.badge-cell {
+  background: #FFF8E7;
+  border-radius: 16rpx;
+  padding: 12rpx 8rpx;
+  width: 33.33%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  text-align: center;
+  border: 2rpx solid #FFEAA7;
+}
+
+.badge-cell-icon {
+  font-size: 40rpx;
+}
+
+.badge-cell-name {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #2D3436;
+}
+
+.badge-cell-desc {
+  font-size: 20rpx;
+  color: #636E72;
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #B2BEC3;
+  text-align: center;
+  padding: 20rpx 0;
+}
+
+/* ===== 危险操作 ===== */
+.danger-card {
+  border: 2rpx solid #FFE0E0;
+}
+
+.dev-hint {
+  display: block;
+  text-align: center;
+  font-size: 20rpx;
+  color: #B2BEC3;
+  margin-top: 8rpx;
+}
+
+/* ===== 弹窗覆盖层 ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #FFFFFF;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 40rpx 32rpx;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #2D3436;
+  margin-bottom: 32rpx;
+  display: block;
+  text-align: center;
+}
+
+/* ===== 表单 ===== */
+.form-group {
+  margin-bottom: 24rpx;
+}
+
+.form-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #636E72;
+  margin-bottom: 10rpx;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  height: 72rpx;
+  background: #F8F9FA;
+  border-radius: 16rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #2D3436;
+  box-sizing: border-box;
+  border: 2rpx solid #F0F0F0;
+}
+
+/* ===== 分类选择 ===== */
+.category-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.category-tag {
+  padding: 10rpx 24rpx;
+  border-radius: 16rpx;
+  font-size: 26rpx;
+  background: #F0F0F0;
+  color: #636E72;
+}
+
+.category-tag.cat-selected {
+  background: #FFF8E7;
+  color: #FF9F43;
+  font-weight: 600;
+  border: 2rpx solid #FF9F43;
+}
+
+/* ===== Emoji选择器 ===== */
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.emoji-tag {
+  font-size: 40rpx;
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16rpx;
+  background: #F8F9FA;
+  border: 2rpx solid transparent;
+}
+
+.emoji-tag.emoji-selected {
+  background: #FFF8E7;
+  border-color: #FF9F43;
+}
+
+/* ===== 任务类型 ===== */
+.task-type-row { display: flex; gap: 16rpx; }
+.task-type-tag { flex: 1; padding: 14rpx 0; border-radius: 16rpx; font-size: 26rpx; background: #F0F0F0; color: #636E72; text-align: center; }
+.task-type-tag.tt-active { background: #A29BFE; color: #fff; font-weight: 600; }
+
+/* ===== 学科选择（迷你） ===== */
+.subject-picker-mini { display: flex; gap: 16rpx; }
+.sub-mini-tag { flex: 1; padding: 14rpx 0; border-radius: 16rpx; font-size: 26rpx; background: #F0F0F0; color: #636E72; text-align: center; }
+.sub-mini-tag.sub-active { background: #FF9F43; color: #fff; font-weight: 600; }
+
+/* ===== 提醒设置 ===== */
+.reminder-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 2rpx solid #F8F9FA;
+}
+
+.reminder-row:last-child {
+  border-bottom: none;
+}
+
+.mine-hint { font-size: 24rpx; color: #B2BEC3; display: block; margin-top: -8rpx; }
+.reminder-label {
+  font-size: 28rpx;
+  color: #2D3436;
+}
+
+.reminder-time {
+  font-size: 28rpx;
+  color: #FF9F43;
+  font-weight: 600;
+  padding: 8rpx 24rpx;
+  background: #FFF8E7;
+  border-radius: 12rpx;
+}
+
+/* ===== 奖励图片预览 ===== */
+.reward-img-preview {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  margin-top: 12rpx;
+  border: 2rpx solid #F0F0F0;
+}
+
+/* ===== 孩子账号 ===== */
+.child-list { display: flex; flex-wrap: wrap; gap: 12rpx; margin-top: 10rpx; }
+.child-item {
+  padding: 12rpx 20rpx; border-radius: 16rpx; font-size: 26rpx;
+  background: #F0F0F0; color: #636E72; display: flex; align-items: center; gap: 8rpx;
+}
+.child-item.child-active { background: #FFF8E7; color: #FF9F43; font-weight: 600; border: 2rpx solid #FF9F43; }
+.child-check { font-size: 24rpx; }
+
+/* ===== 云备份按钮 ===== */
+.btns-row { margin-top: 8rpx; }
+
+/* ===== 弹窗按钮 ===== */
+.modal-actions {
+  margin-top: 32rpx;
+}

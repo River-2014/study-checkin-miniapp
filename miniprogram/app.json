@@ -1,0 +1,66 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/calendar/calendar",
+    "pages/rewards/rewards",
+    "pages/mine/mine",
+    "pages/mistakes/mistakes",
+    "pages/pointslog/pointslog",
+    "pages/detail/detail",
+    "pages/password/password",
+    "pages/ai-exam/ai-exam",
+    "pages/role/role",
+    "pages/wrongbook/wrongbook",
+    "pages/login/login",
+    "pages/family/family",
+    "pages/badges/badges",
+    "pages/practice/practice",
+    "pages/exam-paper/exam-paper",
+    "pages/admin/admin"
+  ],
+  "window": {
+    "navigationBarTitleText": "小升初冲刺打卡",
+    "navigationBarTextStyle": "white",
+    "navigationBarBackgroundColor": "#FF9F43",
+    "backgroundColor": "#FFF8E7"
+  },
+  "tabBar": {
+    "color": "#B2BEC3",
+    "selectedColor": "#FF9F43",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "打卡",
+        "iconPath": "images/checkin.png",
+        "selectedIconPath": "images/checkin_active.png"
+      },
+      {
+        "pagePath": "pages/calendar/calendar",
+        "text": "日历",
+        "iconPath": "images/stats.png",
+        "selectedIconPath": "images/stats_active.png"
+      },
+      {
+        "pagePath": "pages/rewards/rewards",
+        "text": "商城",
+        "iconPath": "images/profile.png",
+        "selectedIconPath": "images/profile_active.png"
+      },
+      {
+        "pagePath": "pages/mistakes/mistakes",
+        "text": "错题本",
+        "iconPath": "images/stats.png",
+        "selectedIconPath": "images/stats_active.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的",
+        "iconPath": "images/profile.png",
+        "selectedIconPath": "images/profile_active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

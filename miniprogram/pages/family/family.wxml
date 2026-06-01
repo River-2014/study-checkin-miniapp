@@ -1,0 +1,32 @@
+<view class="family-page">
+  <view class="family-card">
+    <view class="family-section-title">👨‍👩‍👧‍👦 我的家庭</view>
+    <view class="family-code-area" wx:if="{{familyCode}}">
+      <text class="family-code-label">家庭邀请码</text>
+      <text class="family-code-value">{{familyCode}}</text>
+      <text class="family-code-hint">将此码分享给家人，对方输入后即可加入</text>
+    </view>
+    <button class="btn btn-primary" bindtap="onCreateCode" wx:if="{{!familyCode}}">
+      生成邀请码
+    </button>
+
+    <view class="family-divider"></view>
+
+    <view class="family-section-title">👶 家庭成员</view>
+    <view wx:if="{{children.length === 0}}" class="family-empty">暂无家庭成员</view>
+    <view wx:for="{{children}}" wx:key="childOpenid" class="family-member-item">
+      <view class="member-avatar">{{item.avatar || '👶'}}</view>
+      <view class="member-info">
+        <text class="member-name">{{item.childName || '孩子'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="family-card">
+    <view class="family-section-title">🔗 加入家庭</view>
+    <input class="family-code-input" placeholder="请输入6位邀请码" maxlength="6" bindinput="onCodeInput"/>
+    <button class="btn btn-outline" bindtap="onJoinFamily" disabled="{{codeInput.length !== 6}}">
+      加入家庭
+    </button>
+  </view>
+</view>

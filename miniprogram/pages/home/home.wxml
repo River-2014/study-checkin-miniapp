@@ -1,0 +1,191 @@
+<view class="home-page">
+  <!-- ===== 头部问候 ===== -->
+  <view class="header-section">
+    <view class="greeting">
+      <text class="greeting-text">{{greeting}}，小勇士！🔥</text>
+      <text class="sub-text">今天也要加油哦💪</text>
+    </view>
+    <view class="stars-badge">
+      <text class="star-icon">⭐</text>
+      <text class="star-count">{{stars}}</text>
+    </view>
+  </view>
+
+  <!-- ===== 连续打卡卡片 ===== -->
+  <view class="card streak-card">
+    <view class="streak-left">
+      <view class="fire-icon {{streak > 0 ? 'fire-bounce' : ''}}">🔥</view>
+      <view class="streak-info">
+        <text class="streak-num">{{streak}}</text>
+        <text class="streak-label">连续打卡天数</text>
+      </view>
+    </view>
+    <view class="streak-right">
+      <text class="longest-label">最长</text>
+      <text class="longest-num">{{longestStreak}}天</text>
+    </view>
+  </view>
+
+  <!-- ===== 进度条 ===== -->
+  <view class="card progress-section">
+    <view class="progress-header">
+      <text class="progress-title">今日进度</text>
+      <text class="progress-text">{{doneCount}}/{{totalCount}} 完成</text>
+    </view>
+    <view class="progress-bar-bg">
+      <view class="progress-bar-fill" style="width: {{progressPercent}}%"></view>
+    </view>
+  </view>
+
+  <!-- ===== 今日推荐练习 ===== -->
+  <view class="daily-plan" wx:if="{{dailyPlan}}">
+    <view class="plan-header">
+      <text>📋 今日推荐练习</text>
+    </view>
+    <view class="plan-content">
+      <view class="plan-left">
+        <text class="plan-subject">{{dailyPlan.subject}}</text>
+        <text class="plan-info">{{dailyPlan.knowledge}} · {{dailyPlan.difficulty}} · {{dailyPlan.count}}题</text>
+      </view>
+      <view class="plan-btn" bindtap="startDailyPlan">一键练习</view>
+    </view>
+  </view>
+
+  <!-- ===== 任务列表 ===== -->
+  <view class="task-section">
+    <view class="section-title">📋 今日学习任务</view>
+    <view wx:for="{{tasks}}" wx:key="id" class="task-card {{doneMap[item.id] ? 'task-done' : ''}}"
+      data-id="{{item.id}}" bindtap="toggleTask" bindlongpress="onRecordMistake" hover-class="task-hover">
+      <view class="task-icon">{{item.icon}}</view>
+      <view class="task-info">
+        <text class="task-name">{{item.name}}</text>
+        <text class="task-category tag-{{catClassMap[item.category] || 'other'}}">{{item.category}}</text>
+      </view>
+      <view class="task-points">
+        <text class="points-value">+{{item.points}}</text>
+        <text class="points-unit">⭐</text>
+      </view>
+      <view class="task-right">
+        <!-- 有练习链接且未完成 → 蓝色"练习"按钮（catchtap防冒泡） -->
+        <view wx:if="{{!doneMap[item.id] && item.linkPractice}}" class="practice-go-btn" catchtap="goToPractice" data-task="{{item}}">
+          <text class="go-text">练习</text>
+          <text class="go-arrow">▶</text>
+        </view>
+        <!-- 已完成 → 绿色勾 -->
+        <view wx:elif="{{doneMap[item.id]}}" class="task-done-mark">✅</view>
+        <!-- 普通未完成 → 打卡圆形 -->
+        <view wx:else class="task-check-box">⭕</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== AI 出题入口 ===== -->
+  <view class="card ai-exam-entry" bindtap="goToAI" hover-class="task-hover">
+    <view class="ai-exam-entry-inner">
+      <text class="ai-exam-icon">🧠</text>
+      <view class="ai-exam-entry-text">
+        <text class="ai-exam-entry-title">AI 出题练习</text>
+        <text class="ai-exam-entry-desc">AI 智能出题 · 自动批改 · 含解析</text>
+      </view>
+      <text class="ai-exam-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 题库练习入口 ===== -->
+  <view class="card ai-exam-entry" bindtap="goToLocalPractice" hover-class="task-hover">
+    <view class="ai-exam-entry-inner">
+      <text class="ai-exam-icon">📚</text>
+      <view class="ai-exam-entry-text">
+        <text class="ai-exam-entry-title">题库练习</text>
+        <text class="ai-exam-entry-desc">本地题库随机抽题 · 自动批改 · 收录错题</text>
+      </view>
+      <text class="ai-exam-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 模拟考试入口 ===== -->
+  <view class="card ai-exam-entry" bindtap="goToPaperExam" hover-class="task-hover">
+    <view class="ai-exam-entry-inner">
+      <text class="ai-exam-icon">📝</text>
+      <view class="ai-exam-entry-text">
+        <text class="ai-exam-entry-title">模拟考试</text>
+        <text class="ai-exam-entry-desc">生成整卷 · 限时答题 · 成绩报告</text>
+      </view>
+      <text class="ai-exam-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 错题本入口 ===== -->
+  <view class="card wrongbook-entry" bindtap="goToWrongBook" hover-class="task-hover">
+    <view class="wrongbook-entry-inner">
+      <text class="wrongbook-icon">📖</text>
+      <view class="wrongbook-entry-text">
+        <text class="wrongbook-entry-title">错题本</text>
+        <text class="wrongbook-entry-desc">AI 练习错题自动收录 · 查看解析</text>
+      </view>
+      <text class="wrongbook-entry-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 成就徽章 ===== -->
+  <view class="card badge-section">
+    <view class="section-title">
+      <text>🏆 成就徽章</text>
+      <text class="badge-more" bindtap="goToBadges">查看全部 ›</text>
+    </view>
+    <scroll-view scroll-x class="badge-scroll" show-scrollbar="{{false}}" enable-flex>
+      <view wx:for="{{allBadges}}" wx:key="key" class="badge-item {{item.earned ? '' : 'badge-locked'}}">
+        <view class="badge-icon">{{item.earned ? item.emoji : '🔒'}}</view>
+        <text class="badge-name">{{item.earned ? item.name : '???'}}</text>
+      </view>
+      <view wx:if="{{allBadges.length === 0}}" class="badge-empty">暂无徽章</view>
+    </scroll-view>
+  </view>
+
+  <!-- ===== 学习看板 ===== -->
+  <view class="card chart-section">
+    <view class="section-title">📊 近7天完成率</view>
+    <chart-bar data="{{chartData}}" options="{{chartOptions}}"></chart-bar>
+  </view>
+
+  <!-- ===== AI 学习建议 ===== -->
+  <view class="card ai-section">
+    <view class="section-title">🤖 AI 学习小贴士</view>
+    <text wx:if="{{aiLoading}}" class="ai-loading">AI 正在思考中...</text>
+    <text wx:elif="{{aiAdvice}}" class="ai-advice">{{aiAdvice}}</text>
+    <text wx:else class="ai-empty">点击刷新获取个性化学习建议</text>
+    <button class="btn btn-small" style="margin-top: 16rpx; background: #F0F0F0; color: #636E72; width: fit-content;" bindtap="refreshAIReport" loading="{{aiLoading}}">🔄 刷新建议</button>
+  </view>
+
+  <!-- ===== 家长中心入口（仅家长模式显示） ===== -->
+  <view wx:if="{{isParent}}" class="card parent-entry-home" bindtap="goToDetail" hover-class="task-hover">
+    <view class="parent-entry-inner">
+      <text class="parent-entry-icon">📋</text>
+      <view class="parent-entry-text">
+        <text class="parent-entry-title">家长中心</text>
+        <text class="parent-entry-desc">打卡明细 · AI练习记录 · 积分流水 · 兑换记录</text>
+      </view>
+      <text class="parent-entry-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 分享鼓励卡 ===== -->
+  <view class="card share-section">
+    <button class="btn btn-primary btn-block" bindtap="onShareCard">
+      🎉 生成鼓励卡
+    </button>
+    <canvas type="2d" id="shareCanvas" class="share-canvas-hidden"></canvas>
+  </view>
+
+  <!-- ===== 底部安全区 ===== -->
+  <view class="safe-bottom"></view>
+</view>
+
+<!-- ===== 撒花容器（仅在有撒花时渲染） ===== -->
+<view wx:if="{{confettiList.length > 0}}" class="confetti-container">
+  <view wx:for="{{confettiList}}" wx:for-item="item" wx:key="*this"
+    class="confetti-piece"
+    style="left: {{item.left}}%; animation-delay: {{item.delay}}s; animation-duration: {{item.duration}}s;">
+    {{item.emoji}}
+  </view>
+</view>

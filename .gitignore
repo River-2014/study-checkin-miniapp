@@ -1,0 +1,31 @@
+# 依赖
+crawler/node_modules/
+
+# 爬虫输出（题库数据，体积大且属于运行时产物）
+crawler/output/
+
+# 微信小程序
+miniprogram/node_modules/
+
+# 云函数依赖（云开发自动安装，不需要提交）
+miniprogram/cloudfunctions/*/node_modules/
+
+# IDE / 编辑器
+.idea/
+.vscode/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log
+npm-debug.log*
+
+# Claude 配置（个人配置，非项目文件）
+.claude/

@@ -1,0 +1,45 @@
+.container { padding: 20rpx 24rpx; background: #FFF8F0; min-height: 100vh; }
+.tabs { display: flex; background: #fff; border-radius: 16rpx; margin-bottom: 20rpx; overflow: hidden; box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.04); }
+.tab { flex: 1; text-align: center; padding: 20rpx 0; font-size: 26rpx; color: #636E72; }
+.tab.active { background: #FF9F43; color: #fff; font-weight: 700; }
+.detail-list { background: #fff; border-radius: 20rpx; padding: 8rpx 24rpx; }
+.date-title { font-size: 28rpx; font-weight: 700; color: #FF9F43; margin: 20rpx 0 12rpx; }
+.log-item { display: flex; align-items: center; padding: 18rpx 0; border-bottom: 1rpx solid #F5F5F5; }
+.log-item:last-child { border-bottom: none; }
+.log-icon { font-size: 32rpx; margin-right: 16rpx; }
+.log-time { font-size: 22rpx; color: #B2BEC3; width: 140rpx; flex-shrink: 0; }
+.log-desc { flex: 1; font-size: 28rpx; color: #2D3436; }
+.log-points { font-weight: 700; font-size: 28rpx; margin-left: 12rpx; white-space: nowrap; }
+.log-points.earn { color: #2ED573; }
+.log-points.spend { color: #FF6B6B; }
+.empty { text-align: center; color: #B2BEC3; padding: 60rpx 0; font-size: 28rpx; }
+.chart-container {
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #F5F5F5;
+  margin-bottom: 8rpx;
+}
+.rate-chart {
+  width: 100%;
+  height: 320rpx;
+}
+.radar-container {
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #F5F5F5;
+  margin-bottom: 8rpx;
+}
+.radar-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #2D3436;
+  margin-bottom: 12rpx;
+}
+.radar-canvas {
+  width: 100%;
+  height: 400rpx;
+}
+.ai-record-info { display: flex; flex-direction: column; align-items: flex-end; gap: 4rpx; margin-left: 12rpx; flex-shrink: 0; }
+.ai-record-text { font-size: 22rpx; color: #B2BEC3; }
+.ai-record-score { font-weight: 700; font-size: 28rpx; }
+.score-good { color: #2ED573; }
+.score-mid { color: #F39C12; }
+.score-low { color: #FF6B6B; }

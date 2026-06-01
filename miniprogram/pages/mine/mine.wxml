@@ -1,0 +1,255 @@
+<view class="mine-page">
+  <!-- ===== 统计卡片 ===== -->
+  <view class="card stats-summary">
+    <view class="stat-row">
+      <view class="stat-cell">
+        <text class="stat-value">{{totalCheckins}}</text>
+        <text class="stat-desc">总打卡次数</text>
+      </view>
+      <view class="stat-cell">
+        <text class="stat-value">{{longestStreak}}</text>
+        <text class="stat-desc">最长连续天数</text>
+      </view>
+      <view class="stat-cell">
+        <text class="stat-value">{{totalStars}}</text>
+        <text class="stat-desc">总星星数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 徽章展示 ===== -->
+  <view class="card">
+    <view class="section-title">🏆 已获得徽章 ({{badgeCount}})</view>
+    <view wx:if="{{badgeCount > 0}}" class="badge-grid">
+      <view wx:for="{{earnedBadges}}" wx:key="key" class="badge-cell">
+        <text class="badge-cell-icon">{{badgeEmojiMap[index] || '🏅'}}</text>
+        <text class="badge-cell-name">{{item.name}}</text>
+        <text class="badge-cell-desc">{{item.desc}}</text>
+      </view>
+    </view>
+    <view wx:else class="empty-hint">还没有获得徽章，继续加油吧！🔥</view>
+  </view>
+
+  <!-- ===== 家长中心 ===== -->
+  <view wx:if="{{isParent}}" class="card" bindtap="goToDetail" hover-class="task-hover">
+    <view class="section-title">📋 家长中心</view>
+    <text class="mine-hint">查看打卡明细、AI练习记录、积分流水、兑换记录</text>
+  </view>
+
+  <!-- ===== 任务提醒 ===== -->
+  <view class="card">
+    <view class="section-title">⏰ 每日打卡提醒</view>
+    <view class="reminder-row">
+      <text class="reminder-label">开启提醒</text>
+      <switch checked="{{reminderEnabled}}" bindchange="onReminderSwitch" color="#FF9F43" />
+    </view>
+    <view wx:if="{{reminderEnabled}}" class="reminder-row">
+      <text class="reminder-label">提醒时间</text>
+      <picker mode="time" value="{{reminderTimeStr}}" bindchange="onReminderTimeChange">
+        <text class="reminder-time">{{reminderTimeStr}}</text>
+      </picker>
+    </view>
+    <view wx:if="{{reminderEnabled}}" class="reminder-row">
+      <text class="reminder-label">微信通知</text>
+      <button class="btn btn-small" style="width: auto; padding: 8rpx 24rpx; font-size: 24rpx;" bindtap="onSubscribeReminder">
+        {{reminderSubscribed ? '已订阅 ✓' : '开启推送通知'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- ===== 任务管理 ===== -->
+  <view class="card">
+    <view class="section-title">📋 任务管理</view>
+    <button class="btn btn-primary btn-block" bindtap="onAddTask">
+      ✏️ 添加自定义任务
+    </button>
+    <button class="btn btn-primary btn-block" style="margin-top: 16rpx; background: linear-gradient(135deg, #2ED573, #7BED9F);" bindtap="onResetTasks">
+      🔄 恢复默认任务
+    </button>
+  </view>
+
+  <!-- ===== 奖励管理 ===== -->
+  <view class="card">
+    <view class="section-title">🎁 奖励管理</view>
+    <button class="btn btn-primary btn-block" bindtap="onShowRewardModal">
+      🖼️ 添加自定义奖励
+    </button>
+    <button class="btn btn-primary btn-block" style="margin-top: 16rpx; background: linear-gradient(135deg, #54A0FF, #A29BFE);" bindtap="onResetRewards">
+      🔄 恢复默认奖励
+    </button>
+  </view>
+
+  <!-- ===== 家长设置 ===== -->
+  <view class="card">
+    <view class="section-title">📊 数据明细</view>
+    <button class="btn btn-primary btn-block" style="background: linear-gradient(135deg, #A29BFE, #6C5CE7);" bindtap="onOpenPointsLog">
+      ⭐ 积分明细
+    </button>
+  </view>
+
+  <view class="card">
+    <view class="section-title">🔒 家长设置</view>
+    <button class="btn btn-primary btn-block" style="background: linear-gradient(135deg, #A29BFE, #6C5CE7);" bindtap="onChangePassword">
+      🔑 修改密码
+    </button>
+    <button class="btn btn-primary btn-block" style="margin-top: 16rpx; background: linear-gradient(135deg, #FDCB6E, #E17055);" bindtap="onLock">
+      🔒 锁定
+    </button>
+  </view>
+
+  <!-- ===== 身份切换 ===== -->
+  <view class="card">
+    <view class="section-title">🔄 身份切换</view>
+    <text class="mine-hint">当前：{{userMode === 'parent' ? '家长模式' : '学生模式'}}</text>
+    <button class="btn btn-primary btn-block" style="margin-top: 16rpx; background: linear-gradient(135deg, #A29BFE, #6C5CE7);" bindtap="onSwitchRole">
+      {{userMode === 'parent' ? '切换到学生模式' : '切换到家长模式'}}
+    </button>
+  </view>
+
+  <!-- ===== 家庭管理 ===== -->
+  <view class="card">
+    <view class="section-title">👨‍👩‍👧‍👦 家庭管理</view>
+    <button class="btn btn-primary btn-block" style="margin-top: 8rpx; background: linear-gradient(135deg, #FF9F43, #FDCB6E);" bindtap="onGoToFamily">🏠 管理家庭</button>
+  </view>
+
+  <!-- ===== 多孩账号 ===== -->
+  <view class="card">
+    <view class="section-title">👶 孩子账号</view>
+    <text class="mine-hint">当前：{{currentChildName}}</text>
+    <view class="child-list">
+      <view wx:for="{{childrenList}}" wx:key="id" class="child-item {{currentChildId === item.id ? 'child-active' : ''}}" bindtap="switchToChild" data-id="{{item.id}}">
+        <text>{{item.name}}</text>
+        <text wx:if="{{currentChildId === item.id}}" class="child-check">✅</text>
+      </view>
+    </view>
+    <button class="btn btn-primary btn-block" style="margin-top: 16rpx; background: linear-gradient(135deg, #2ED573, #7BED9F);" bindtap="addChild">➕ 添加孩子</button>
+  </view>
+
+  <!-- ===== 云备份 ===== -->
+  <view class="card">
+    <view class="section-title">☁️ 云端备份</view>
+    <view class="btns-row">
+      <button class="btn btn-primary btn-block" style="background: linear-gradient(135deg, #54A0FF, #A29BFE);" bindtap="cloudBackup">⬆️ 备份数据</button>
+      <button class="btn btn-primary btn-block" style="margin-top: 12rpx; background: linear-gradient(135deg, #F39C12, #E17055);" bindtap="cloudRestore">⬇️ 恢复数据</button>
+    </view>
+  </view>
+
+  <!-- ===== 危险操作 ===== -->
+  <view class="card danger-card">
+    <view class="section-title danger-title">⚠️ 危险操作</view>
+    <button class="btn btn-danger btn-block" bindtap="onResetAll">
+      🗑️ 重置全部数据
+    </button>
+    <button class="btn btn-small" style="margin-top: 16rpx; width: 100%; background: #F0F0F0; color: #636E72;" bindtap="onAddStarsTest">
+      ⭐ 加星测试（+50⭐）
+    </button>
+    <text class="dev-hint">开发模式 · 仅用于测试</text>
+  </view>
+
+  <!-- ===== 题库管理 ===== -->
+  <view class="card" style="margin-top: 24rpx;">
+    <view class="section-title">🗄️ 题库管理</view>
+    <text class="mine-hint">管理本地题库数据，爬取公开试题资源</text>
+    <button class="btn btn-primary btn-block" style="margin-top: 12rpx; background: linear-gradient(135deg, #636E72, #2D3436);" bindtap="onGoToAdmin">
+      ⚙️ 进入题库管理
+    </button>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>
+
+<!-- ===== 自定义任务弹窗 ===== -->
+<view wx:if="{{showTaskModal}}" class="modal-overlay" bindtap="closeTaskModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <text class="modal-title">✏️ 添加自定义任务</text>
+
+    <view class="form-group">
+      <text class="form-label">任务名称</text>
+      <input class="form-input" placeholder="如：背英语单词20个" value="{{taskForm.name}}" bindinput="onNameInput" maxlength="20" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">积分</text>
+      <input class="form-input" type="number" placeholder="如：10" value="{{taskForm.points}}" bindinput="onPointsInput" maxlength="3" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">分类</text>
+      <view class="category-picker">
+        <view wx:for="{{categories}}" wx:key="*this"
+          class="category-tag {{taskForm.category === item ? 'cat-selected' : ''}}"
+          data-cat="{{item}}" bindtap="onSelectCategory">{{item}}</view>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">选择图标</text>
+      <view class="emoji-picker">
+        <view wx:for="{{emojiList}}" wx:key="*this"
+          class="emoji-tag {{taskForm.icon === item ? 'emoji-selected' : ''}}"
+          data-emoji="{{item}}" bindtap="onSelectEmoji">{{item}}</view>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">任务类型</text>
+      <view class="task-type-row">
+        <view wx:for="{{taskTypes}}" wx:key="value"
+          class="task-type-tag {{taskForm.taskType === item.value ? 'tt-active' : ''}}"
+          data-type="{{item.value}}" bindtap="onSelectTaskType">{{item.icon}} {{item.label}}</view>
+      </view>
+    </view>
+
+    <!-- 练习类型时显示学科选择 -->
+    <view wx:if="{{taskForm.taskType === 'practice'}}" class="form-group">
+      <text class="form-label">关联学科</text>
+      <view class="subject-picker-mini">
+        <view wx:for="{{['语文','数学','英语']}}" wx:key="*this"
+          class="sub-mini-tag {{taskForm.linkSubject === item ? 'sub-active' : ''}}"
+          data-sub="{{item}}" bindtap="onSelectLinkSubject">{{item}}</view>
+      </view>
+    </view>
+
+    <view class="modal-actions">
+      <button class="btn btn-primary btn-block" bindtap="confirmAddTask">确认添加</button>
+      <button class="btn btn-block" style="margin-top: 16rpx; background: #F0F0F0; color: #636E72;" bindtap="closeTaskModal">取消</button>
+    </view>
+  </view>
+</view>
+
+<!-- ===== 自定义奖励弹窗 ===== -->
+<view wx:if="{{showRewardModal}}" class="modal-overlay" bindtap="closeRewardModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <text class="modal-title">🎁 添加自定义奖励</text>
+
+    <view class="form-group">
+      <text class="form-label">奖励名称</text>
+      <input class="form-input" placeholder="如：吃一顿大餐" value="{{rewardForm.name}}" bindinput="onRewardNameInput" maxlength="20" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">所需积分</text>
+      <input class="form-input" type="number" placeholder="如：50" value="{{rewardForm.cost}}" bindinput="onRewardCostInput" maxlength="3" />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">选择图标（选填）</text>
+      <view class="emoji-picker">
+        <view wx:for="{{emojiList}}" wx:key="*this"
+          class="emoji-tag {{rewardForm.icon === item ? 'emoji-selected' : ''}}"
+          data-rewardemoji="{{item}}" bindtap="onSelectRewardEmoji">{{item}}</view>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">或上传实物图片</text>
+      <button class="btn btn-small" style="background: #F0F0F0; color: #636E72; width: fit-content;" bindtap="chooseRewardImage">📷 选择图片</button>
+      <image wx:if="{{rewardForm.imagePreview}}" src="{{rewardForm.imagePreview}}" mode="aspectFill" class="reward-img-preview" />
+    </view>
+
+    <view class="modal-actions">
+      <button class="btn btn-primary btn-block" bindtap="confirmAddReward">确认添加</button>
+      <button class="btn btn-block" style="margin-top: 16rpx; background: #F0F0F0; color: #636E72;" bindtap="closeRewardModal">取消</button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,2 @@
+<canvas type="2d" class="chart-canvas"></canvas>
+<view class="chart-fallback" wx:if="{{fallback}}">{{fallback}}</view>

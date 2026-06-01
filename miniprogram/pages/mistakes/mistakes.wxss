@@ -1,0 +1,57 @@
+/* ===== 错题本样式 ===== */
+.mistakes-page { padding-bottom: 30rpx; }
+
+/* ===== 筛选栏 ===== */
+.filter-bar {
+  display: flex; flex-wrap: wrap; padding: 16rpx 20rpx; gap: 12rpx;
+}
+.filter-tag {
+  padding: 8rpx 24rpx; border-radius: 20rpx; font-size: 26rpx;
+  background: #F0F0F0; color: #636E72;
+}
+.filter-active { background: #FF9F43; color: #fff; font-weight: 600; }
+
+/* ===== 错题卡片 ===== */
+.mistake-list { padding: 0 20rpx; }
+.mistake-card {
+  background: #fff; border-radius: 20rpx; padding: 24rpx;
+  margin-bottom: 16rpx; box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.06);
+}
+.mistake-header { display: flex; align-items: center; gap: 12rpx; margin-bottom: 12rpx; }
+.mistake-subject { font-size: 22rpx; padding: 2rpx 16rpx; border-radius: 8rpx; color: #fff; }
+.mistake-date { font-size: 22rpx; color: #B2BEC3; }
+.mistake-reviewed { font-size: 22rpx; color: #2ED573; margin-left: auto; }
+.mistake-thumb { width: 200rpx; height: 150rpx; border-radius: 12rpx; overflow: hidden; margin-bottom: 10rpx; }
+.mistake-thumb image { width: 100%; height: 100%; }
+.mistake-note { font-size: 26rpx; color: #636E72; display: block; margin-bottom: 8rpx; }
+.mistake-task-ref { font-size: 24rpx; color: #B2BEC3; display: block; }
+
+/* ===== 复习按钮栏 ===== */
+.review-bar { padding: 20rpx; }
+
+/* ===== 复习弹窗 ===== */
+.review-content {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 620rpx; max-height: 80vh; background: #fff;
+  border-radius: 32rpx; padding: 40rpx; z-index: 200;
+  display: flex; flex-direction: column; align-items: center;
+}
+.review-title { font-size: 36rpx; font-weight: 700; margin-bottom: 24rpx; }
+.review-swiper { width: 100%; height: 500rpx; }
+.review-card-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 16rpx;
+  padding: 20rpx 0;
+}
+.review-img-wrap { width: 100%; }
+.review-img { width: 100%; border-radius: 16rpx; }
+.review-note { font-size: 28rpx; color: #2D3436; text-align: center; }
+.review-ref { font-size: 24rpx; color: #B2BEC3; }
+.review-actions { margin-top: 24rpx; width: 100%; }
+
+/* ===== 学科标签 ===== */
+.tag-chinese { background: #FF9F43; }
+.tag-math { background: #2ED573; }
+.tag-english { background: #54A0FF; }
+.tag-general { background: #A29BFE; }
+.tag-sport { background: #FF6B6B; }
+.tag-life { background: #FDCB6E; color: #2D3436; }

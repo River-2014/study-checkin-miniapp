@@ -1,0 +1,30 @@
+<view class="rewards-page">
+  <!-- ===== 积分余额 ===== -->
+  <view class="stars-header">
+    <text class="stars-label">我的星星</text>
+    <view class="stars-display">
+      <text class="star-big">⭐</text>
+      <text class="star-count-big">{{stars}}</text>
+    </view>
+  </view>
+
+  <!-- ===== 奖励列表 ===== -->
+  <view class="section-title">🎁 兑换奖励</view>
+
+  <view class="reward-grid">
+    <view wx:for="{{rewards}}" wx:key="id" class="reward-card"
+      data-id="{{item.id}}" bindtap="onRedeem"
+      style="{{item.cost > stars ? 'opacity: 0.5;' : ''}}">
+      <view class="reward-icon">
+        <image wx:if="{{item.imageBase64}}" src="data:image/jpeg;base64,{{item.imageBase64}}" mode="aspectFill" class="reward-card-img" />
+        <text wx:else>{{item.icon}}</text>
+      </view>
+      <text class="reward-name">{{item.name}}</text>
+      <view class="reward-cost {{item.cost > stars ? 'cost-not-enough' : ''}}">
+        <text>⭐ {{item.cost}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

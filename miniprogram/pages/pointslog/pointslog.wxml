@@ -1,0 +1,26 @@
+<view class="pl-page">
+  <!-- ===== 筛选 ===== -->
+  <view class="pl-filter">
+    <view class="pl-filter-tag {{filter === 'all' ? 'pl-active' : ''}}" data-filter="all" bindtap="onFilter">全部</view>
+    <view class="pl-filter-tag {{filter === 'earn' ? 'pl-active' : ''}}" data-filter="earn" bindtap="onFilter">获得</view>
+    <view class="pl-filter-tag {{filter === 'spend' ? 'pl-active' : ''}}" data-filter="spend" bindtap="onFilter">消费</view>
+  </view>
+
+  <!-- ===== 流水列表 ===== -->
+  <view wx:for="{{list}}" wx:key="id" class="pl-item">
+    <view class="pl-left">
+      <text class="pl-desc">{{item.description}}</text>
+      <text class="pl-time">{{formatTime(item.time)}}</text>
+    </view>
+    <text class="pl-amount {{item.type === 'earn' ? 'pl-earn' : 'pl-spend'}}">
+      {{item.type === 'earn' ? '+' : '-'}}{{item.amount}}⭐
+    </text>
+  </view>
+
+  <view wx:if="{{list.length === 0}}" class="empty-state">
+    <view class="empty-emoji">📊</view>
+    <text>暂无记录</text>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

@@ -1,0 +1,171 @@
+# ============================================================
+# CI 主流水线 —— 学习打卡小程序
+# 触发条件：push 到 main/develop 分支、创建 PR 到 main
+# ============================================================
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+# 全局权限：只读（安全最佳实践）
+permissions:
+  contents: read
+
+# 全局超时：防止卡死任务消耗 Actions 额度
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # ============================================================
+  # Job 1: 爬虫代码校验
+  # ============================================================
+  crawler-check:
+    name: 爬虫代码检查
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: ./crawler
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './crawler/package-lock.json'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 语法检查（核心脚本）
+        run: |
+          set -e
+          node -c crawler.js      && echo "✓ crawler.js"
+          node -c import_to_cloud.js && echo "✓ import_to_cloud.js"
+          node -c output_cloud.js    && echo "✓ output_cloud.js"
+          node -c seedData.js        && echo "✓ seedData.js"
+          node -c simulate_import.js && echo "✓ simulate_import.js"
+
+      - name: 依赖安全审计
+        run: npm audit --audit-level=high --production
+
+  # ============================================================
+  # Job 2: 云函数校验
+  # ============================================================
+  cloud-functions-check:
+    name: 云函数校验
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 云函数 package.json 格式校验
+        run: |
+          set -e
+          PASS=0
+          FAIL=0
+          for dir in miniprogram/cloudfunctions/*/; do
+            name=$(basename "$dir")
+            echo "--- 检查云函数: $name ---"
+
+            # 校验 package.json 格式
+            if [ -f "${dir}package.json" ]; then
+              if node -e "JSON.parse(require('fs').readFileSync('${dir}package.json','utf8'))" 2>/dev/null; then
+                echo "  ✓ package.json 格式正确"
+                ((PASS++)) || true
+              else
+                echo "  ✗ package.json 格式错误"
+                ((FAIL++)) || true
+              fi
+            else
+              echo "  ⚠ 缺少 package.json"
+            fi
+
+            # 校验 index.js 语法
+            if [ -f "${dir}index.js" ]; then
+              if node -c "${dir}index.js" 2>/dev/null; then
+                echo "  ✓ index.js 语法正确"
+                ((PASS++)) || true
+              else
+                echo "  ✗ index.js 语法错误"
+                ((FAIL++)) || true
+              fi
+            fi
+          done
+          echo ""
+          echo "====== 结果: 通过 $PASS 项, 失败 $FAIL 项 ======"
+          if [ "$FAIL" -gt 0 ]; then exit 1; fi
+
+  # ============================================================
+  # Job 3: 安全检查
+  # ============================================================
+  security-check:
+    name: 安全检查
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 项目配置格式校验
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('project.config.json','utf8'))" \
+            && echo "✓ project.config.json 格式正确"
+
+      - name: 敏感信息泄露扫描
+        run: |
+          set -e
+          # 扫描可能泄露的腾讯云密钥字段（排除 node_modules）
+          PATTERNS=(
+            "secretId"
+            "secretKey"
+            "SECRET_ID"
+            "SECRET_KEY"
+            "TENCENT_SECRET"
+            "WX_SECRET"
+            "accessKeyId"
+            "accessKeySecret"
+          )
+          FOUND=0
+          for pattern in "${PATTERNS[@]}"; do
+            matches=$(grep -rn "$pattern" --include="*.js" --include="*.json" . \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.claude || true)
+            if [ -n "$matches" ]; then
+              echo "⚠ 发现疑似密钥引用:"
+              echo "$matches"
+              ((FOUND++)) || true
+            fi
+          done
+          if [ "$FOUND" -gt 0 ]; then
+            echo ""
+            echo "✗ 请检查以上文件，确保密钥通过环境变量或微信云开发 SDK 获取"
+            exit 1
+          fi
+          echo "✓ 未发现硬编码密钥"
+
+      - name: 大文件检查
+        run: |
+          # 检查是否有超过 10MB 的文件被提交
+          LARGE_FILES=$(find . -type f -size +10M \
+            -not -path "./.git/*" \
+            -not -path "./crawler/node_modules/*" \
+            -not -path "./crawler/output/*" 2>/dev/null || true)
+          if [ -n "$LARGE_FILES" ]; then
+            echo "⚠ 发现大文件（>10MB），建议使用 Git LFS："
+            echo "$LARGE_FILES"
+            exit 1
+          fi
+          echo "✓ 未发现大文件"

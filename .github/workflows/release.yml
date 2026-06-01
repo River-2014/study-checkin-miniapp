@@ -1,0 +1,151 @@
+# ============================================================
+# 发布前校验流水线
+# 触发条件：推送以 v 开头的 tag（如 v1.0.0）
+# 微信小程序发布不走 GitHub，此流水线用于发布前的质量把关
+# ============================================================
+name: Release Check
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'release-*'
+
+permissions:
+  contents: write
+
+jobs:
+  # ============================================================
+  # 全面质量检查
+  # ============================================================
+  validate:
+    name: 发布前校验
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 爬虫依赖安装与检查
+        working-directory: ./crawler
+        run: |
+          npm ci
+          echo "--- 核心脚本语法检查 ---"
+          node -c crawler.js
+          node -c import_to_cloud.js
+          node -c seedData.js
+          node -c simulate_import.js
+          echo "✓ 爬虫模块检查通过"
+
+      - name: 云函数全面检查
+        run: |
+          set -e
+          echo "--- 云函数检查 ---"
+          for dir in miniprogram/cloudfunctions/*/; do
+            name=$(basename "$dir")
+            echo "检查: $name"
+
+            # 校验 package.json
+            if [ -f "${dir}package.json" ]; then
+              node -e "JSON.parse(require('fs').readFileSync('${dir}package.json','utf8'))" \
+                || { echo "✗ $name package.json 格式错误"; exit 1; }
+
+              # 检查是否依赖了 latest 版本（不推荐）
+              if grep -q '"latest"' "${dir}package.json" 2>/dev/null; then
+                echo "  ⚠ $name 依赖了 latest 版本，建议锁定具体版本"
+              fi
+            fi
+
+            # 校验 index.js 语法
+            if [ -f "${dir}index.js" ]; then
+              node -c "${dir}index.js" \
+                || { echo "✗ $name index.js 语法错误"; exit 1; }
+            fi
+
+            echo "  ✓ 通过"
+          done
+          echo ""
+          echo "✓ 所有云函数检查通过"
+
+      - name: 项目配置文件完整性检查
+        run: |
+          set -e
+          node -e "JSON.parse(require('fs').readFileSync('project.config.json','utf8'))" \
+            && echo "✓ project.config.json"
+          node -e "JSON.parse(require('fs').readFileSync('project.private.config.json','utf8'))" \
+            && echo "✓ project.private.config.json"
+          for f in miniprogram/pages/*/*.json; do
+            node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))" 2>/dev/null || \
+              echo "⚠ $f 格式有误"
+          done
+          echo "✓ 配置文件检查完成"
+
+      - name: 小程序页面完整性检查
+        run: |
+          set -e
+          echo "--- 页面文件完整性 ---"
+          MISSING=0
+          for dir in miniprogram/pages/*/; do
+            name=$(basename "$dir")
+            missing_files=""
+            [ -f "${dir}${name}.js"   ] || missing_files="$missing_files js"
+            [ -f "${dir}${name}.json" ] || missing_files="$missing_files json"
+            [ -f "${dir}${name}.wxml" ] || missing_files="$missing_files wxml"
+            [ -f "${dir}${name}.wxss" ] || missing_files="$missing_files wxss"
+            if [ -n "$missing_files" ]; then
+              echo "  ✗ $name 缺少: $missing_files"
+              ((MISSING++)) || true
+            else
+              echo "  ✓ $name 文件完整"
+            fi
+          done
+          if [ "$MISSING" -gt 0 ]; then
+            echo ""
+            echo "✗ 共 $MISSING 个页面缺少必要文件，请补全后再发布"
+            exit 1
+          fi
+          echo "✓ 所有页面文件完整"
+
+  # ============================================================
+  # 生成 Release Notes
+  # ============================================================
+  release-notes:
+    name: 生成 Release Notes
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    needs: validate
+    permissions:
+      contents: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 自动生成 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: |
+            ## 🚀 发布说明
+
+            请在此补充本次发布的具体内容：
+
+            ### 新增功能
+            -
+
+            ### 修复问题
+            -
+
+            ### 注意事项
+            - 微信小程序需通过微信开发者工具上传
+            - 云函数需在云开发控制台部署
+
+            ---
+            ℹ️ 此 Release 由 CI 自动校验生成
+          draft: true
+          generate_release_notes: true

@@ -1,0 +1,60 @@
+<view class="mistakes-page">
+  <!-- ===== 筛选器 ===== -->
+  <view class="filter-bar">
+    <view wx:for="{{subjects}}" wx:key="*this"
+      class="filter-tag {{currentSubject === item ? 'filter-active' : ''}}"
+      data-subject="{{item}}" bindtap="onFilter">{{item}}</view>
+  </view>
+
+  <!-- ===== 错题列表 ===== -->
+  <view wx:if="{{list.length > 0}}" class="mistake-list">
+    <view wx:for="{{list}}" wx:key="id" class="mistake-card"
+      bindtap="onPreview" data-id="{{item.id}}" bindlongpress="onDelete" data-id-del="{{item.id}}">
+      <view class="mistake-header">
+        <text class="mistake-subject tag-{{subjectClassMap[item.subject] || 'other'}}">{{item.subject}}</text>
+        <text class="mistake-date">{{item.date}}</text>
+        <text wx:if="{{item.reviewed}}" class="mistake-reviewed">✅ 已复习</text>
+      </view>
+      <view wx:if="{{item.imageBase64}}" class="mistake-thumb">
+        <image src="data:image/jpeg;base64,{{item.imageBase64}}" mode="aspectFill" />
+      </view>
+      <text wx:if="{{item.note}}" class="mistake-note">{{item.note}}</text>
+      <text class="mistake-task-ref">📌 {{taskNames[item.taskId] || '未知任务'}}</text>
+    </view>
+  </view>
+
+  <view wx:else class="empty-state">
+    <view class="empty-emoji">📝</view>
+    <text>还没有错题记录，继续加油！</text>
+  </view>
+
+  <!-- ===== 随机复习按钮 ===== -->
+  <view class="review-bar" wx:if="{{list.length > 0}}">
+    <button class="btn btn-primary btn-block" bindtap="onReview">🎯 随机复习（3题）</button>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>
+
+<!-- ===== 复习弹窗 ===== -->
+<view wx:if="{{showReview}}" class="modal-overlay" bindtap="closeReview">
+  <view class="review-content" catchtap="stopPropagation">
+    <text class="review-title">📖 错题复习</text>
+    <swiper current="{{reviewIndex}}" duration="300" class="review-swiper" bindchange="onSwiperChange">
+      <swiper-item wx:for="{{reviewList}}" wx:key="id">
+        <view class="review-card-inner">
+          <text class="review-subject tag-{{subjectClassMap[item.subject] || 'other'}}">{{item.subject}}</text>
+          <view wx:if="{{item.imageBase64}}" class="review-img-wrap">
+            <image src="data:image/jpeg;base64,{{item.imageBase64}}" mode="widthFix" class="review-img" />
+          </view>
+          <text wx:if="{{item.note}}" class="review-note">{{item.note}}</text>
+          <text class="review-ref">📌 {{taskNames[item.taskId] || '未知任务'}}</text>
+        </view>
+      </swiper-item>
+    </swiper>
+    <view class="review-actions">
+      <button class="btn btn-success btn-small" bindtap="onReviewDone">✅ 复习完成 +2⭐</button>
+      <button class="btn btn-small" style="background: #F0F0F0; color: #636E72; margin-top: 16rpx;" bindtap="closeReview">关闭</button>
+    </view>
+  </view>
+</view>

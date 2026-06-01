@@ -1,0 +1,191 @@
+<view class="practice-page">
+
+  <!-- ===================== 阶段1：筛选设置 ===================== -->
+  <view class="setting-panel" wx:if="{{phase === 'setting'}}">
+    <view class="card">
+      <view class="filter-group">
+        <view class="filter-row">
+          <text class="filter-label">年级</text>
+          <picker mode="selector" range="{{gradeList}}" value="{{gradeIndex}}" bindchange="onGradeChange">
+            <view class="picker-value">{{gradeList[gradeIndex]}}</view>
+          </picker>
+        </view>
+        <view class="filter-row">
+          <text class="filter-label">科目</text>
+          <picker mode="selector" range="{{subjects}}" value="{{subjectIndex}}" bindchange="onSubjectChange">
+            <view class="picker-value">{{subjects[subjectIndex]}}</view>
+          </picker>
+        </view>
+        <view class="filter-row">
+          <text class="filter-label">难度</text>
+          <picker mode="selector" range="{{difficulties}}" value="{{difficultyIndex}}" bindchange="onDifficultyChange">
+            <view class="picker-value">{{difficulties[difficultyIndex]}}</view>
+          </picker>
+        </view>
+      </view>
+
+      <!-- 题型多选 -->
+      <view class="filter-group">
+        <text class="filter-label">题型</text>
+        <view class="type-tags">
+          <view
+            wx:for="{{types}}"
+            wx:key="name"
+            class="type-tag {{item.active ? 'type-tag-active' : ''}}"
+            data-index="{{index}}"
+            bindtap="onTypeToggle"
+          >{{item.name}}</view>
+        </view>
+      </view>
+
+      <!-- 数量滑动条 -->
+      <view class="filter-group">
+        <text class="filter-label">题目数量：<text class="count-num">{{count}}</text></text>
+        <slider
+          value="{{count}}"
+          min="1" max="20"
+          show-value="{{false}}"
+          activeColor="#FF9F43"
+          backgroundColor="#EEE"
+          block-size="20"
+          bindchange="onCountChange"
+        />
+      </view>
+
+      <button class="btn btn-primary btn-block" bindtap="startPractice" loading="{{loading}}" disabled="{{loading}}">
+        📚 开始练习
+      </button>
+    </view>
+  </view>
+
+  <!-- ===================== 阶段2：答题 ===================== -->
+  <view class="answering-panel" wx:if="{{phase === 'answering'}}">
+    <!-- 进度条 -->
+    <view class="question-progress">
+      <view class="progress-info">
+        <text class="back-link" bindtap="goToSetting">← 返回</text>
+        <text>{{currentIndex + 1}} / {{questions.length}}</text>
+        <text class="submit-early" bindtap="submitAnswers">提交</text>
+      </view>
+      <view class="progress-bar-bg">
+        <view class="progress-bar-fill" style="width: {{questions.length > 0 ? (currentIndex + 1) / questions.length * 100 : 0}}%"></view>
+      </view>
+    </view>
+
+    <!-- 题目 Swiper -->
+    <swiper
+      current="{{currentIndex}}"
+      bindchange="onSwiperChange"
+      class="question-swiper"
+      style="height: calc(100vh - 200rpx)"
+    >
+      <swiper-item wx:for="{{questions}}" wx:key="_id">
+        <scroll-view scroll-y class="question-scroll">
+          <view class="question-card">
+            <!-- 题目标题 -->
+            <view class="q-header">
+              <text class="q-num">{{index + 1}}.</text>
+              <text class="q-type-tag">{{item.type}}</text>
+              <text class="q-difficulty" wx:if="{{item.difficulty}}">{{item.difficulty}}</text>
+            </view>
+
+            <!-- 题干 -->
+            <view class="q-stem">{{item.stem}}</view>
+
+            <!-- 选择题 -->
+            <view class="options" wx:if="{{item.type === '选择题' && item.options && item.options.length > 0}}">
+              <view
+                wx:for="{{item.options}}"
+                wx:for-item="opt"
+                wx:for-index="optIdx"
+                wx:key="optIdx"
+                class="option {{userAnswers[item._id] === ['A','B','C','D','E','F'][optIdx] ? 'option-selected' : ''}} {{showResult && optIdx === item._correctOptIdx ? 'option-correct' : ''}} {{showResult && userAnswers[item._id] === ['A','B','C','D','E','F'][optIdx] && optIdx !== item._correctOptIdx ? 'option-wrong' : ''}}"
+                data-qid="{{item._id}}"
+                data-label="{{['A','B','C','D','E','F'][optIdx]}}"
+                bindtap="selectOption"
+              >
+                <text class="opt-label">{{['A','B','C','D','E','F'][optIdx]}}.</text>
+                <text class="opt-text">{{opt}}</text>
+              </view>
+            </view>
+
+            <!-- 判断题 -->
+            <view class="judge-section" wx:if="{{item.type === '判断题'}}">
+              <view class="judge-btns">
+                <view
+                  class="judge-btn {{userAnswers[item._id] === '√' ? 'judge-active' : ''}} {{showResult ? 'judge-disabled' : ''}}"
+                  data-qid="{{item._id}}" data-val="√"
+                  bindtap="selectJudge"
+                >✓ 正确</view>
+                <view
+                  class="judge-btn {{userAnswers[item._id] === '×' ? 'judge-active judge-wrong' : ''}} {{showResult ? 'judge-disabled' : ''}}"
+                  data-qid="{{item._id}}" data-val="×"
+                  bindtap="selectJudge"
+                >✗ 错误</view>
+              </view>
+            </view>
+
+            <!-- 填空题 -->
+            <view class="blank-section" wx:if="{{item.type === '填空题'}}">
+              <input
+                class="blank-input"
+                placeholder="请输入你的答案"
+                value="{{userAnswers[item._id] || ''}}"
+                data-qid="{{item._id}}"
+                bindinput="fillBlank"
+                disabled="{{showResult}}"
+              />
+            </view>
+
+            <!-- 简答题 -->
+            <view class="essay-section" wx:if="{{item.type === '简答题'}}">
+              <textarea
+                class="essay-textarea"
+                placeholder="请输入你的解答..."
+                value="{{userAnswers[item._id] || ''}}"
+                data-qid="{{item._id}}"
+                bindinput="fillBlank"
+                maxlength="500"
+                disabled="{{showResult}}"
+              />
+            </view>
+
+            <!-- 解析区（提交后显示） -->
+            <view class="analysis" wx:if="{{showResult}}">
+              <view class="correct-badge" wx:if="{{item._isCorrect}}">✅ 你的答案：{{userAnswers[item._id]}}  回答正确</view>
+              <block wx:else>
+                <view class="wrong-badge">❌ 你的答案：{{userAnswers[item._id] || '（未作答）'}}</view>
+                <view class="correct-answer">✅ 正确答案：{{item.answer}}</view>
+              </block>
+              <view class="analysis-text" wx:if="{{item.explanation}}">📖 解析：{{item.explanation}}</view>
+              <view class="exam-point" wx:if="{{item.examPoint}}">🎯 考察：{{item.examPoint}}</view>
+            </view>
+          </view>
+        </scroll-view>
+      </swiper-item>
+    </swiper>
+
+    <!-- 提交按钮（底部固定） -->
+    <view class="submit-bar" wx:if="{{!showResult}}">
+      <button class="btn btn-outline btn-sm" style="flex:1; margin:0 8rpx;" bindtap="prevQuestion" disabled="{{currentIndex === 0}}">上一题</button>
+      <button class="btn btn-outline btn-sm" style="flex:1; margin:0 8rpx;" bindtap="nextQuestion" disabled="{{currentIndex === questions.length - 1}}">下一题</button>
+      <button class="btn btn-primary" style="flex:1.5; margin:0 8rpx;" bindtap="submitAnswers">提交批改</button>
+    </view>
+  </view>
+
+  <!-- ===================== 阶段3：结果 ===================== -->
+  <!-- 结果在答题区内展示，提交后底部显示操作按钮 -->
+  <view class="result-footer" wx:if="{{phase === 'answering' && showResult}}">
+    <view class="result-score">
+      <text class="score-label">正确率</text>
+      <text class="score-num">{{questions.length > 0 ? Math.round(correctCount / questions.length * 100) : 0}}%</text>
+      <text class="score-detail">{{correctCount}} / {{questions.length}}</text>
+    </view>
+    <view class="result-actions">
+      <button class="btn btn-outline" bindtap="redoQuestions">再做一遍</button>
+      <button class="btn btn-outline" bindtap="goToWrongbook">查看错题</button>
+      <button class="btn btn-primary" bindtap="goToSetting">返回筛选</button>
+    </view>
+  </view>
+
+</view>

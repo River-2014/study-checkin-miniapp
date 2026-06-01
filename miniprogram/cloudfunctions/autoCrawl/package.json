@@ -1,0 +1,9 @@
+{
+  "name": "autoCrawl",
+  "version": "1.0.0",
+  "description": "根据输入 URL 自动识别网站类型并爬取题目/试卷",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

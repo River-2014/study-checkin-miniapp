@@ -1,0 +1,12 @@
+{
+  "triggers": [
+    {
+      "name": "dailyReminder",
+      "type": "timer",
+      "config": "0 30 19 * * * *"
+    }
+  ],
+  "permissions": {
+    "openapi": ["subscribeMessage.send"]
+  }
+}

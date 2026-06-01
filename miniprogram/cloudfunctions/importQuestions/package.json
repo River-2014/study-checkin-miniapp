@@ -1,0 +1,9 @@
+{
+  "name": "importQuestions",
+  "version": "1.0.0",
+  "description": "批量导入爬虫题库到 exam_questions 集合",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

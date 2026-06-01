@@ -1,0 +1,9 @@
+{
+  "name": "migrateDataV3",
+  "version": "1.0.0",
+  "description": "清洗 exam_questions，将 shijuan1/tiku 元数据迁移到 examination_papers",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "小升初冲刺打卡",
+  "usingComponents": {
+    "chart-bar": "../../components/chart-bar/chart-bar"
+  }
+}

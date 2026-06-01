@@ -1,0 +1,112 @@
+.family-page {
+  min-height: 100vh;
+  background: #FFF8E7;
+  padding: 30rpx;
+}
+.family-card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+}
+.family-section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #2D3436;
+  margin-bottom: 24rpx;
+}
+.family-code-area {
+  text-align: center;
+  padding: 30rpx;
+  background: #FFF8E7;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+}
+.family-code-label {
+  font-size: 24rpx;
+  color: #636E72;
+  display: block;
+  margin-bottom: 12rpx;
+}
+.family-code-value {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #FF9F43;
+  letter-spacing: 8rpx;
+  display: block;
+  margin-bottom: 12rpx;
+}
+.family-code-hint {
+  font-size: 22rpx;
+  color: #B2BEC3;
+  display: block;
+}
+.btn-primary {
+  background: #FF9F43;
+  color: #FFFFFF;
+  font-size: 28rpx;
+  padding: 20rpx 0;
+  border-radius: 50rpx;
+  width: 100%;
+  text-align: center;
+}
+.btn-outline {
+  background: #FFFFFF;
+  color: #FF9F43;
+  font-size: 28rpx;
+  padding: 20rpx 0;
+  border-radius: 50rpx;
+  width: 100%;
+  text-align: center;
+  border: 2rpx solid #FF9F43;
+  margin-top: 20rpx;
+}
+.btn-outline[disabled] {
+  opacity: 0.4;
+}
+.family-divider {
+  height: 2rpx;
+  background: #F0F0F0;
+  margin: 30rpx 0;
+}
+.family-empty {
+  text-align: center;
+  color: #B2BEC3;
+  font-size: 26rpx;
+  padding: 40rpx 0;
+}
+.family-member-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #F8F8F8;
+}
+.family-member-item:last-child {
+  border-bottom: none;
+}
+.member-avatar {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.member-info {
+  flex: 1;
+}
+.member-name {
+  font-size: 28rpx;
+  color: #2D3436;
+  font-weight: 500;
+}
+.family-code-input {
+  background: #F8F8F8;
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  text-align: center;
+  letter-spacing: 12rpx;
+}
