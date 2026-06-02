@@ -6,6 +6,9 @@ App({
     logs.unshift(Date.now());
     wx.setStorageSync('logs', logs);
 
+    // DECR 埋点: 记录活跃
+    try { require('./utils/storage').trackDailyMetric('active'); } catch(e) {}
+
     // 初始化云开发
     try {
       wx.cloud.init({

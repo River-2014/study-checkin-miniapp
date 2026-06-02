@@ -11,19 +11,53 @@
     </view>
   </view>
 
-  <!-- ===== 连续打卡卡片 ===== -->
-  <view class="card streak-card">
+  <!-- ===== 连续打卡卡片（4级火焰） ===== -->
+  <view class="card streak-card" style="border-left: 6rpx solid {{flameState === 'burning' ? '#FF9F43' : flameState === 'weakening' ? '#F39C12' : flameState === 'embers' ? '#E17055' : '#B2BEC3'}}">
     <view class="streak-left">
-      <view class="fire-icon {{streak > 0 ? 'fire-bounce' : ''}}">🔥</view>
+      <view class="fire-icon {{flameState === 'burning' ? 'fire-bounce' : ''}}">
+        {{flameState === 'burning' ? '🔥' : flameState === 'weakening' ? '🕯️' : flameState === 'embers' ? '💨' : '❄️'}}
+      </view>
       <view class="streak-info">
-        <text class="streak-num">{{streak}}</text>
-        <text class="streak-label">连续打卡天数</text>
+        <text class="streak-num">{{flameStreak || streak}}</text>
+        <text class="streak-label">{{flameState === 'burning' ? '火焰正旺！' : flameState === 'weakening' ? '火焰微弱...' : flameState === 'embers' ? '余烬尚温' : '火焰已熄'}}</text>
       </view>
     </view>
     <view class="streak-right">
       <text class="longest-label">最长</text>
       <text class="longest-num">{{longestStreak}}天</text>
     </view>
+  </view>
+
+  <!-- 守护卡操作区（微弱/余烬状态显示） -->
+  <view class="guardian-bar" wx:if="{{flameState === 'weakening' || flameState === 'embers'}}">
+    <text class="guardian-hint">{{flameState === 'weakening' ? '火焰还在，今天打卡就能重新燃起来' : '余烬尚温，使用守护卡可以恢复'}}</text>
+    <view class="guardian-actions">
+      <view class="guardian-btn" bindtap="useGuardianCard" wx:if="{{guardianCards > 0}}">🛡️ 使用守护卡 ({{guardianCards}})</view>
+      <view class="guardian-btn buy" bindtap="buyGuardianCard" wx:if="{{guardianCards < 5}}">💎 购买 (50⭐)</view>
+    </view>
+  </view>
+
+  <!-- ===== 一键开始（第一个未完成任务） ===== -->
+  <view class="card next-task-card" wx:if="{{nextTask && !allDone}}" bindtap="startNextTask">
+    <view class="next-task-label">下一个任务</view>
+    <view class="next-task-main">
+      <text class="next-task-icon">{{nextTask.icon}}</text>
+      <view class="next-task-info">
+        <text class="next-task-name">{{nextTask.name}}</text>
+        <view class="next-task-tags">
+          <text class="tag tag-{{catClassMap[nextTask.category]}}">{{nextTask.category}}</text>
+          <text class="next-task-points">+{{nextTask.points}}⭐</text>
+        </view>
+      </view>
+      <view class="next-task-btn pulse">一键开始</view>
+    </view>
+  </view>
+
+  <!-- ===== 全部完成 ===== -->
+  <view class="card all-done-card" wx:if="{{allDone}}">
+    <view class="all-done-icon">🎉</view>
+    <text class="all-done-title">今日任务全部完成！</text>
+    <text class="all-done-sub">本周已完成 {{doneCount}} 天打卡</text>
   </view>
 
   <!-- ===== 进度条 ===== -->
@@ -179,6 +213,19 @@
 
   <!-- ===== 底部安全区 ===== -->
   <view class="safe-bottom"></view>
+
+  <!-- ===== AI 练习推荐浮层 ===== -->
+  <view class="ai-recommend-overlay" wx:if="{{showAIRecommend}}" catchtap="closeAIRecommend">
+    <view class="ai-recommend-card" catchtap="">
+      <view class="ai-rec-icon">🧠</view>
+      <view class="ai-rec-title">来 5 道{{aiRecommendSubject}}题巩固一下？</view>
+      <view class="ai-rec-desc">AI 智能出题，错题自动收录</view>
+      <view class="ai-rec-actions">
+        <view class="ai-rec-btn primary" bindtap="startQuickAI">开始练习</view>
+        <view class="ai-rec-btn" bindtap="closeAIRecommend">跳过</view>
+      </view>
+    </view>
+  </view>
 </view>
 
 <!-- ===== 撒花容器（仅在有撒花时渲染） ===== -->

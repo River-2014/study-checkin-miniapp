@@ -107,7 +107,12 @@ function initData() {
       earnedBadges: [],
       parentPassword: '1234',
       isParentUnlocked: false,
-      reminder: { enabled: false, hour: 19, minute: 30, lastRemindedDate: null }
+      reminder: { enabled: false, hour: 19, minute: 30, lastRemindedDate: null },
+      flameState: 'burning',        // burning|weakening|embers|extinguished
+      flameStreak: 0,               // 火焰显示用的连续天数
+      guardianCards: 2,             // 每月免费守护卡
+      guardianCardsMax: 5,          // 每月上限
+      lastGuardianReset: ''         // 上次重置月份 YYYY-MM
     },
     nextTaskId: 100,
     nextRewardId: 100,
@@ -122,7 +127,8 @@ function initData() {
     // === 新增字段 ===
     userMode: 'student',          // 'student' | 'parent'
     wrongBook: [],                // [{ id, content, type, difficulty, options, answer, analysis, examPoint, subject, knowledge, addedTime }]
-    aiRecords: []                 // [{ time, subject, knowledge, difficulty, type, textbook, preference, totalCount, correctCount }]
+    aiRecords: [],                // [{ time, subject, knowledge, difficulty, type, textbook, preference, totalCount, correctCount }]
+    dailyMetrics: {}              // { "YYYY-MM-DD": { active, checkedIn } } DECR 北极星指标
   };
 }
 
@@ -276,22 +282,115 @@ function getTodayCheckins() {
   return data.checkins[today] || [];
 }
 
-/** 跨天校验：进入首页时调用，检查是否断签 */
-function validateStreak() {
-  const data = getAppData();
-  const today = getTodayStr();
-  const yesterday = getYesterdayStr();
+/** 火焰降温4级机制: 断1天→微弱, 断2天→余烬, 断3天→熄灭 */
+function updateFlameState(data) {
+  var today = getTodayStr();
+  var yesterday = getYesterdayStr();
+  var hasToday = !!(data.checkins[today] && data.checkins[today].length > 0);
+  var hasYesterday = !!(data.checkins[yesterday] && data.checkins[yesterday].length > 0);
 
-  const hasToday = !!(data.checkins[today] && data.checkins[today].length > 0);
-  const hasYesterday = !!(data.checkins[yesterday] && data.checkins[yesterday].length > 0);
+  // 每月1日重置守护卡
+  resetMonthlyGuardianCards(data);
 
-  // 如果今天还没打卡且昨天也没有打卡，连续天数归零
-  if (!hasToday && !hasYesterday && data.user.streak > 0) {
-    data.user.streak = 0;
-    saveAppData(data);
+  if (hasToday && hasYesterday) {
+    // 连续打卡: 升级火焰
+    data.user.flameStreak = data.user.streak;
+    if (data.user.streak >= 3) data.user.flameState = 'burning';
+    else if (data.user.streak >= 1) data.user.flameState = 'burning';
+  } else if (hasToday && !hasYesterday) {
+    // 今天打卡了但昨天没打: 恢复中
+    data.user.flameStreak = data.user.streak;
+    if (data.user.flameState === 'embers') data.user.flameState = 'weakening';
+    else if (data.user.flameState === 'extinguished') data.user.flameState = 'weakening';
+  } else if (!hasToday && hasYesterday) {
+    // 今天还没打但昨天打了: 暂不降级
+  } else if (!hasToday && !hasYesterday) {
+    // 连续两天没打卡: 降级
+    if (data.user.flameState === 'burning') data.user.flameState = 'weakening';
+    else if (data.user.flameState === 'weakening') data.user.flameState = 'embers';
+    else if (data.user.flameState === 'embers') {
+      data.user.flameState = 'extinguished';
+      data.user.streak = 0;
+      data.user.flameStreak = 0;
+    }
   }
+}
 
+/** 使用守护卡：补签昨天，恢复火焰 */
+function useGuardianCard(data) {
+  if (!data) data = getAppData();
+  var yesterday = getYesterdayStr();
+
+  if (data.user.guardianCards <= 0) return { success: false, msg: '守护卡不足' };
+  if (data.user.flameState === 'extinguished') return { success: false, msg: '火焰已熄，无法使用守护卡' };
+  if (data.user.flameState === 'burning') return { success: false, msg: '火焰正旺，无需使用守护卡' };
+
+  // 消耗守护卡
+  data.user.guardianCards--;
+  // 补签昨天（补一个虚拟打卡记录）
+  if (!data.checkins[yesterday]) data.checkins[yesterday] = [];
+  if (data.checkins[yesterday].indexOf('_guardian') < 0) {
+    data.checkins[yesterday].push('_guardian');
+  }
+  // 恢复火焰
+  data.user.flameState = 'burning';
+  data.user.streak = Math.max(data.user.streak, 1);
+  data.user.flameStreak = data.user.streak;
+  data.user.lastCheckinDate = getTodayStr();
+
+  saveAppData(data);
+  return { success: true, remaining: data.user.guardianCards };
+}
+
+/** 积分购买守护卡 */
+function buyGuardianCard(data, cost) {
+  if (!data) data = getAppData();
+  cost = cost || 50;
+  if (data.user.stars < cost) return { success: false, msg: '积分不足' };
+  if (data.user.guardianCards >= data.user.guardianCardsMax) return { success: false, msg: '已达上限' };
+
+  data.user.stars -= cost;
+  data.user.guardianCards++;
+  data.user.totalStarsEarned -= cost;
+  addPointsLog(data, 'spend', cost, '购买火焰守护卡');
+  saveAppData(data);
+  return { success: true, remaining: data.user.guardianCards };
+}
+
+/** 每月重置守护卡 */
+function resetMonthlyGuardianCards(data) {
+  var now = new Date();
+  var monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  if (data.user.lastGuardianReset !== monthKey) {
+    data.user.guardianCards = Math.min(data.user.guardianCards + 2, data.user.guardianCardsMax);
+    data.user.lastGuardianReset = monthKey;
+  }
+}
+
+/** 跨天校验：进入首页时调用 */
+function validateStreak() {
+  var data = getAppData();
+  updateFlameState(data);
+  saveAppData(data);
   return data;
+}
+
+/** DECR 埋点: 记录每日活跃/打卡状态 */
+function trackDailyMetric(action) {
+  var today = getTodayStr();
+  var data = getAppData();
+  if (!data.dailyMetrics) data.dailyMetrics = {};
+  if (!data.dailyMetrics[today]) {
+    data.dailyMetrics[today] = { active: false, checkedIn: false };
+  }
+  if (action === 'active') data.dailyMetrics[today].active = true;
+  if (action === 'checkin') data.dailyMetrics[today].checkedIn = true;
+  // 保留最近 60 天
+  var keys = Object.keys(data.dailyMetrics).sort();
+  while (keys.length > 60) {
+    delete data.dailyMetrics[keys.shift()];
+  }
+  saveAppData(data);
 }
 
 // ===== 任务管理 =====
@@ -727,5 +826,11 @@ module.exports = {
   switchChild,
   // 云缓存
   setCloudCache,
-  getCloudCache
+  getCloudCache,
+  // 火焰降温 & 守护卡
+  useGuardianCard,
+  buyGuardianCard,
+  updateFlameState,
+  // DECR 埋点
+  trackDailyMetric
 };

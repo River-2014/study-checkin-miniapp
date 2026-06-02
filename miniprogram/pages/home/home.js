@@ -31,12 +31,23 @@ const CAT_CLASS_MAP = {
   '生活': 'life'
 };
 
+// 火焰状态配置
+var FLAME_CONFIG = {
+  burning:   { emoji: '🔥', color: '#FF6B35', text: '火焰正旺！继续保持', border: '#FF9F43' },
+  weakening: { emoji: '🕯️', color: '#F39C12', text: '火焰还在，今天打卡就能重新燃起来', border: '#F39C12' },
+  embers:    { emoji: '💨', color: '#E17055', text: '余烬尚温，使用守护卡可以恢复', border: '#E17055' },
+  extinguished: { emoji: '❄️', color: '#B2BEC3', text: '火焰已熄，重新开始新的旅程', border: '#B2BEC3' }
+};
+
 Page({
   data: {
     greeting: '',
     stars: 0,
     streak: 0,
     longestStreak: 0,
+    flameState: 'burning',     // burning|weakening|embers|extinguished
+    flameStreak: 0,
+    guardianCards: 2,
     tasks: [],
     doneMap: {},
     doneCount: 0,
@@ -50,7 +61,11 @@ Page({
     isParent: false,
     dailyPlan: null,
     chartData: { items: [] },
-    chartOptions: { padding: { top: 25, right: 15, bottom: 30, left: 40 } }
+    chartOptions: { padding: { top: 25, right: 15, bottom: 30, left: 40 } },
+    nextTask: null,         // 第一个未完成任务
+    allDone: false,          // 今日任务是否全部完成
+    showAIRecommend: false,  // AI 练习推荐卡片
+    aiRecommendSubject: ''   // 推荐学科
   },
 
   _confettiTimer: null,
@@ -327,11 +342,15 @@ Page({
       }));
 
       var plan = this.generateDailyPlan(data);
+      var nextTask = this._getNextTask(tasks, doneIds);
       this.setData({
         greeting,
         stars: data.user.stars || 0,
         streak: data.user.streak || 0,
         longestStreak: data.user.longestStreak || 0,
+        flameState: data.user.flameState || 'burning',
+        flameStreak: data.user.flameStreak || data.user.streak || 0,
+        guardianCards: data.user.guardianCards || 0,
         tasks,
         doneMap: this._buildDoneMap(doneIds),
         doneCount: doneIds.length,
@@ -339,7 +358,9 @@ Page({
         progressPercent: tasks.length > 0 ? (doneIds.length / tasks.length) * 100 : 0,
         allBadges,
         isParent: storage.isParentMode(),
-        dailyPlan: plan
+        dailyPlan: plan,
+        nextTask: nextTask,
+        allDone: doneIds.length >= tasks.length && tasks.length > 0
       });
       // 准备柱状图数据
       this.prepareChartData();
@@ -375,6 +396,98 @@ Page({
     wx.showToast({ title: '✅ 任务已完成！', icon: 'success' });
   },
 
+  /** 获取第一个未完成任务 */
+  _getNextTask(tasks, doneIds) {
+    for (var i = 0; i < tasks.length; i++) {
+      if (doneIds.indexOf(tasks[i].id) < 0) {
+        return tasks[i];
+      }
+    }
+    return null;
+  },
+
+  /** 一键开始：点击 hero 卡片进入下一个任务 */
+  startNextTask() {
+    var task = this.data.nextTask;
+    if (!task) return;
+
+    // 带练习链接的任务：直接跳转 AI 出题
+    if (task.linkPractice) {
+      var params = {
+        taskId: task.id,
+        taskName: task.name,
+        subject: task.linkPractice.subject,
+        grades: task.linkPractice.grades
+      };
+      wx.navigateTo({
+        url: '/pages/ai-exam/ai-exam?sourceTask=' + encodeURIComponent(JSON.stringify(params))
+      });
+    } else {
+      // 普通任务：直接打卡
+      var result = storage.toggleTask(task.id);
+      if (result) {
+        this.playCelebrate();
+        storage.checkBadges();
+        this.loadData();
+      }
+    }
+  },
+
+  /** 使用守护卡恢复火焰 */
+  useGuardianCard() {
+    var that = this;
+    wx.showModal({
+      title: '使用火焰守护卡',
+      content: '确定消耗1张守护卡恢复火焰吗？剩余：' + this.data.guardianCards + '张',
+      success: function(res) {
+        if (!res.confirm) return;
+        var data = storage.getAppData();
+        var result = storage.useGuardianCard(data);
+        if (result.success) {
+          wx.showToast({ title: '火焰已恢复！🔥', icon: 'success' });
+          that.loadData();
+          that.playCelebrate();
+        } else {
+          wx.showToast({ title: result.msg, icon: 'none' });
+        }
+      }
+    });
+  },
+
+  /** 关闭 AI 推荐 */
+  closeAIRecommend() { this.setData({ showAIRecommend: false }); },
+
+  /** 快速 AI 练习：5 道题，跳过配置 */
+  startQuickAI() {
+    this.setData({ showAIRecommend: false });
+    var subj = this.data.aiRecommendSubject;
+    var plan = this.data.dailyPlan;
+    var knowledge = plan ? plan.knowledge : '';
+    wx.navigateTo({
+      url: '/pages/ai-exam/ai-exam?mode=quick&subject=' + subj + '&knowledge=' + (knowledge || '') + '&count=5'
+    });
+  },
+
+  /** 积分购买守护卡 */
+  buyGuardianCard() {
+    var that = this;
+    wx.showModal({
+      title: '购买守护卡',
+      content: '消耗50⭐购买1张守护卡？',
+      success: function(res) {
+        if (!res.confirm) return;
+        var data = storage.getAppData();
+        var result = storage.buyGuardianCard(data, 50);
+        if (result.success) {
+          wx.showToast({ title: '购买成功！剩余：' + result.remaining + '张', icon: 'success' });
+          that.loadData();
+        } else {
+          wx.showToast({ title: result.msg, icon: 'none' });
+        }
+      }
+    });
+  },
+
   /** 切换任务打卡状态 */
   toggleTask(e) {
     const id = e.currentTarget.dataset.id;
@@ -393,6 +506,8 @@ Page({
 
     // 如果是完成打卡（非取消）
     if (!wasChecked && nowChecked) {
+      // DECR 埋点
+      storage.trackDailyMetric('checkin');
       // 播放动画
       this.playCelebrate();
 
@@ -415,6 +530,11 @@ Page({
         }));
         this.setData({ allBadges });
       }
+    }
+
+    // 打卡完成后弹出 AI 练习推荐
+    if (!wasChecked && nowChecked && task && task.linkPractice) {
+      this.setData({ showAIRecommend: true, aiRecommendSubject: task.linkPractice.subject });
     }
 
     // 刷新界面
