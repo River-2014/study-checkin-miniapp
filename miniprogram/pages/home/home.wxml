@@ -1,4 +1,13 @@
 <view class="home-page">
+  <!-- 骨架屏 -->
+  <view class="skeleton-wrap" wx:if="{{tasks.length === 0}}">
+    <view class="sk-header sk-shimmer"></view>
+    <view class="sk-card sk-shimmer"></view>
+    <view class="sk-bar sk-shimmer"></view>
+    <view class="sk-row sk-shimmer"></view>
+    <view class="sk-row sk-shimmer"></view>
+  </view>
+
   <!-- ===== 头部问候 ===== -->
   <view class="header-section">
     <view class="greeting">
@@ -267,7 +276,7 @@
   <!-- ===== 分享卡片浮层 ===== -->
   <view class="ai-recommend-overlay" wx:if="{{showShareCard}}" catchtap="closeShareCard">
     <view class="share-card-popup" catchtap="">
-      <image class="share-card-img" src="{{shareImagePath}}" mode="widthFix"></image>
+      <image class="share-card-img" src="{{shareImagePath}}" mode="widthFix" lazy-load></image>
       <view class="share-card-actions">
         <button class="share-btn" open-type="share">发送给朋友</button>
         <view class="share-btn close" bindtap="closeShareCard">关闭</view>

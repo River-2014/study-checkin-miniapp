@@ -197,22 +197,22 @@ Page({
 
   /** 跳转到排行榜 */
   goToLeaderboard() {
-    wx.navigateTo({ url: '/pages/leaderboard/leaderboard' });
+    wx.navigateTo({ url: '/subpkg-learn/pages/leaderboard/leaderboard' });
   },
 
   /** 跳转到番茄钟 */
   goToPomodoro() {
-    wx.navigateTo({ url: '/pages/pomodoro/pomodoro' });
+    wx.navigateTo({ url: '/subpkg-learn/pages/pomodoro/pomodoro' });
   },
 
   /** 跳转到学习周报 */
   goToWeeklyReport() {
-    wx.navigateTo({ url: '/pages/weekly-report/weekly-report' });
+    wx.navigateTo({ url: '/subpkg-learn/pages/weekly-report/weekly-report' });
   },
 
   /** 跳转到 PK 赛 */
   goToPK() {
-    wx.navigateTo({ url: '/pages/pk/pk' });
+    wx.navigateTo({ url: '/subpkg-learn/pages/pk/pk' });
   },
 
   /** 生成分享卡片 */
@@ -231,27 +231,27 @@ Page({
 
   /** 跳转到 AI 出题 */
   goToAI() {
-    wx.navigateTo({ url: '/pages/ai-exam/ai-exam' });
+    wx.navigateTo({ url: '/subpkg-learn/pages/ai-exam/ai-exam' });
   },
 
   /** 跳转到错题本 */
   goToWrongBook() {
-    wx.navigateTo({ url: '/pages/wrongbook/wrongbook' });
+    wx.navigateTo({ url: '/subpkg-learn/pages/wrongbook/wrongbook' });
   },
 
   /** 跳转到题库练习 */
   goToLocalPractice() {
-    wx.navigateTo({ url: '/pages/practice/practice' });
+    wx.navigateTo({ url: '/subpkg-learn/pages/practice/practice' });
   },
 
   /** 跳转到模拟考试 */
   goToPaperExam() {
-    wx.navigateTo({ url: '/pages/exam-paper/exam-paper' });
+    wx.navigateTo({ url: '/subpkg-learn/pages/exam-paper/exam-paper' });
   },
 
   /** 跳转到家长中心 */
   goToDetail() {
-    wx.navigateTo({ url: '/pages/detail/detail' });
+    wx.navigateTo({ url: '/subpkg-user/pages/detail/detail' });
   },
 
   /** 生成每日推荐练习 */
@@ -300,7 +300,7 @@ Page({
       + '&knowledge=' + encodeURIComponent(plan.knowledge)
       + '&difficulty=' + encodeURIComponent(plan.difficulty)
       + '&count=' + plan.count + '&autoDifficulty=1';
-    wx.navigateTo({ url: '/pages/ai-exam/ai-exam?' + q });
+    wx.navigateTo({ url: '/subpkg-learn/pages/ai-exam/ai-exam?' + q });
   },
 
   /** 分享鼓励卡 */
@@ -369,7 +369,7 @@ Page({
   },
 
   goToBadges() {
-    wx.navigateTo({ url: '/pages/badges/badges' });
+    wx.navigateTo({ url: '/subpkg-learn/pages/badges/badges' });
   },
 
   onUnload() {
@@ -389,57 +389,54 @@ Page({
   /** 加载并刷新数据 */
   loadData() {
     try {
-      const data = storage.getAppData();
-      const doneIds = storage.getTodayCheckins();
-      const tasks = data.tasks || [];
+      var data = storage.getAppData();
+      var doneIds = storage.getTodayCheckins();
+      var tasks = data.tasks || [];
 
       // 问候语
-      const hour = new Date().getHours();
-      let greeting = '';
-      if (hour < 6) greeting = '夜深了';
-      else if (hour < 9) greeting = '早上好';
-      else if (hour < 12) greeting = '上午好';
-      else if (hour < 14) greeting = '中午好';
-      else if (hour < 18) greeting = '下午好';
-      else greeting = '晚上好';
+      var hour = new Date().getHours();
+      var greeting = hour < 6 ? '夜深了' : hour < 9 ? '早上好' : hour < 12 ? '上午好' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好';
 
-      // 徽章
-      const earnedSet = {};
-      (data.user.earnedBadges || []).forEach(k => { earnedSet[k] = true; });
-      const allBadges = storage.BADGE_DEFS.map(b => ({
-        key: b.key, name: b.name, desc: b.desc,
-        emoji: BADGE_EMOJI_MAP[b.key] || '🏅',
-        earned: !!earnedSet[b.key]
-      }));
+      // 徽章（轻量计算，仅更新 earned 状态）
+      var earnedSet = {};
+      (data.user.earnedBadges || []).forEach(function(k) { earnedSet[k] = true; });
+      var allBadges = storage.BADGE_DEFS.map(function(b) {
+        return { key: b.key, name: b.name, desc: b.desc, emoji: BADGE_EMOJI_MAP[b.key] || '🏅', earned: !!earnedSet[b.key] };
+      });
 
       var plan = this.generateDailyPlan(data);
       var nextTask = this._getNextTask(tasks, doneIds);
+      var doneMap = this._buildDoneMap(doneIds);
+
+      // 合并为单次 setData（减少 JS→渲染线程通信次数）
       this.setData({
-        greeting,
+        greeting: greeting,
         stars: data.user.stars || 0,
         streak: data.user.streak || 0,
         longestStreak: data.user.longestStreak || 0,
         flameState: data.user.flameState || 'burning',
         flameStreak: data.user.flameStreak || data.user.streak || 0,
         guardianCards: data.user.guardianCards || 0,
-        tasks,
-        doneMap: this._buildDoneMap(doneIds),
+        tasks: tasks,
+        doneMap: doneMap,
         doneCount: doneIds.length,
         totalCount: tasks.length,
-        progressPercent: tasks.length > 0 ? (doneIds.length / tasks.length) * 100 : 0,
-        allBadges,
+        progressPercent: tasks.length > 0 ? Math.round(doneIds.length / tasks.length * 100) : 0,
+        allBadges: allBadges,
         isParent: storage.isParentMode(),
         dailyPlan: plan,
         nextTask: nextTask,
         allDone: doneIds.length >= tasks.length && tasks.length > 0,
         activeContracts: data.contracts ? data.contracts.filter(function(c) { return c.status === 'active'; }) : []
       });
-      // 准备柱状图数据
+
+      // 柱状图数据异步准备（非阻塞）
       this.prepareChartData();
-      // 自动加载AI建议
+
+      // AI 建议延迟加载（避免阻塞首屏渲染）
       if (!this._aiLoaded) {
         this._aiLoaded = true;
-        this.refreshAIReport();
+        setTimeout(this.refreshAIReport.bind(this), 1000);
       }
     } catch (e) {
       console.error('loadData error:', e);
@@ -457,7 +454,7 @@ Page({
       grades: task.linkPractice.grades
     };
     wx.navigateTo({
-      url: '/pages/ai-exam/ai-exam?sourceTask=' + encodeURIComponent(JSON.stringify(params))
+      url: '/subpkg-learn/pages/ai-exam/ai-exam?sourceTask=' + encodeURIComponent(JSON.stringify(params))
     });
   },
 
@@ -492,7 +489,7 @@ Page({
         grades: task.linkPractice.grades
       };
       wx.navigateTo({
-        url: '/pages/ai-exam/ai-exam?sourceTask=' + encodeURIComponent(JSON.stringify(params))
+        url: '/subpkg-learn/pages/ai-exam/ai-exam?sourceTask=' + encodeURIComponent(JSON.stringify(params))
       });
     } else {
       // 普通任务：直接打卡
@@ -536,7 +533,7 @@ Page({
     var plan = this.data.dailyPlan;
     var knowledge = plan ? plan.knowledge : '';
     wx.navigateTo({
-      url: '/pages/ai-exam/ai-exam?mode=quick&subject=' + subj + '&knowledge=' + (knowledge || '') + '&count=5'
+      url: '/subpkg-learn/pages/ai-exam/ai-exam?mode=quick&subject=' + subj + '&knowledge=' + (knowledge || '') + '&count=5'
     });
   },
 
@@ -614,16 +611,19 @@ Page({
       this.setData({ showAIRecommend: true, aiRecommendSubject: task.linkPractice.subject });
     }
 
-    // 刷新界面
+    // 刷新界面（合并为单次 setData）
+    var newDoneMap = this._buildDoneMap(doneIds);
     this.setData({
       stars: result.user.stars,
       streak: result.user.streak,
       longestStreak: result.user.longestStreak,
-      doneMap: this._buildDoneMap(doneIds),
+      doneMap: newDoneMap,
       doneCount: doneIds.length,
-      progressPercent: result.tasks.length > 0 ? (doneIds.length / result.tasks.length) * 100 : 0
+      progressPercent: result.tasks.length > 0 ? Math.round(doneIds.length / result.tasks.length * 100) : 0,
+      allDone: doneIds.length >= result.tasks.length && result.tasks.length > 0,
+      nextTask: this._getNextTask(result.tasks, doneIds)
     });
-    // 更新图表
+    // 图表异步更新
     this.prepareChartData();
   },
 

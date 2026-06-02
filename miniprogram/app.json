@@ -4,28 +4,61 @@
     "pages/calendar/calendar",
     "pages/rewards/rewards",
     "pages/mine/mine",
-    "pages/mistakes/mistakes",
-    "pages/pointslog/pointslog",
-    "pages/detail/detail",
-    "pages/password/password",
-    "pages/ai-exam/ai-exam",
-    "pages/role/role",
-    "pages/wrongbook/wrongbook",
-    "pages/login/login",
-    "pages/family/family",
-    "pages/badges/badges",
-    "pages/practice/practice",
-    "pages/exam-paper/exam-paper",
-    "pages/admin/admin",
-    "pages/admin/questionManage/questionManage",
-    "pages/admin/stats/stats",
-    "pages/admin/reviewQueue/reviewQueue",
-    "pages/admin/unauthorized/unauthorized",
-    "pages/leaderboard/leaderboard",
-    "pages/pomodoro/pomodoro",
-    "pages/weekly-report/weekly-report",
-    "pages/pk/pk"
+    "pages/mistakes/mistakes"
   ],
+  "subpackages": [
+    {
+      "root": "subpkg-learn",
+      "name": "learn",
+      "pages": [
+        "pages/ai-exam/ai-exam",
+        "pages/practice/practice",
+        "pages/exam-paper/exam-paper",
+        "pages/wrongbook/wrongbook",
+        "pages/pomodoro/pomodoro",
+        "pages/leaderboard/leaderboard",
+        "pages/pk/pk",
+        "pages/weekly-report/weekly-report",
+        "pages/badges/badges"
+      ]
+    },
+    {
+      "root": "subpkg-user",
+      "name": "user",
+      "pages": [
+        "pages/detail/detail",
+        "pages/pointslog/pointslog",
+        "pages/password/password",
+        "pages/login/login",
+        "pages/role/role",
+        "pages/family/family",
+        "pages/privacy/privacy",
+        "pages/agreement/agreement"
+      ]
+    },
+    {
+      "root": "subpkg-admin",
+      "name": "admin",
+      "pages": [
+        "pages/admin/admin",
+        "pages/questionManage/questionManage",
+        "pages/stats/stats",
+        "pages/reviewQueue/reviewQueue",
+        "pages/unauthorized/unauthorized"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/home/home": {
+      "network": "all",
+      "packages": ["learn", "user"]
+    },
+    "pages/mine/mine": {
+      "network": "all",
+      "packages": ["user"]
+    }
+  },
+  "__usePrivacyCheck__": true,
   "window": {
     "navigationBarTitleText": "小升初冲刺打卡",
     "navigationBarTextStyle": "white",

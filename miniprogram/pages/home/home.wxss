@@ -3,6 +3,23 @@
   padding-bottom: 20rpx;
 }
 
+/* ===== 骨架屏 ===== */
+.skeleton-wrap { padding: 0 24rpx; }
+.sk-shimmer {
+  background: linear-gradient(90deg, #F0F0F0 25%, #E8E8E8 50%, #F0F0F0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 16rpx;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.sk-header { height: 120rpx; margin: 24rpx 0; border-radius: 24rpx; }
+.sk-card { height: 80rpx; margin-bottom: 16rpx; }
+.sk-bar { height: 40rpx; margin-bottom: 24rpx; }
+.sk-row { height: 100rpx; margin-bottom: 16rpx; }
+
 /* ===== 头部 ===== */
 .header-section {
   background: linear-gradient(135deg, #FF9F43, #F39C12);
