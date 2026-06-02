@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 40rpx;
+  background: #f5f6fa;
+}
+.icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #2d3436;
+  margin-bottom: 16rpx;
+}
+.message {
+  font-size: 28rpx;
+  color: #636e72;
+  margin-bottom: 60rpx;
+  text-align: center;
+}
+.btn-back {
+  width: 400rpx;
+  background: #FF9F43;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+}

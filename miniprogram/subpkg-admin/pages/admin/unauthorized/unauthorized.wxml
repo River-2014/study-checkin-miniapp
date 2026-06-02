@@ -1,0 +1,6 @@
+<view class="container">
+  <view class="icon">🔒</view>
+  <view class="title">访问受限</view>
+  <view class="message">{{message}}</view>
+  <button class="btn-back" bindtap="goBack">返回首页</button>
+</view>

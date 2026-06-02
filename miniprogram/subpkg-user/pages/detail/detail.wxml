@@ -1,0 +1,75 @@
+<view class="container">
+  <view class="tabs">
+    <view class="tab {{activeTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">📅 打卡明细</view>
+    <view class="tab {{activeTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">⭐ 积分流水</view>
+    <view class="tab {{activeTab === 2 ? 'active' : ''}}" bindtap="switchTab" data-index="2">🎁 兑换记录</view>
+    <view class="tab {{activeTab === 3 ? 'active' : ''}}" bindtap="switchTab" data-index="3">🤖 AI练习</view>
+  </view>
+
+  <!-- 打卡明细 -->
+  <scroll-view class="detail-list" scroll-y wx:if="{{activeTab === 0}}">
+    <block wx:for="{{groupedCheckins}}" wx:key="date">
+      <view class="date-title">📅 {{item.date}}</view>
+      <view class="log-item" wx:for="{{item.tasks}}" wx:key="id">
+        <text class="log-icon">{{item.icon}}</text>
+        <text class="log-desc">{{item.name}}</text>
+        <text class="log-points earn">+{{item.points}}⭐</text>
+      </view>
+    </block>
+    <view wx:if="{{groupedCheckins.length > 0}}" class="mini-chart">
+      <text class="mini-chart-title">本周打卡热力图</text>
+      <chart-bar data="{{weekChartData}}" options="{{weekChartOptions}}" wx:if="{{weekChartData.items.length > 0}}"></chart-bar>
+    </view>
+    <view wx:if="{{groupedCheckins.length > 0}}" class="mini-chart">
+      <text class="mini-chart-title">学科完成分布</text>
+      <chart-bar data="{{subjChartData}}" options="{{subjChartOptions}}" wx:if="{{subjChartData.items.length > 0}}"></chart-bar>
+    </view>
+    <view wx:if="{{groupedCheckins.length === 0}}" class="empty">暂无打卡记录 开始学习吧！🚀</view>
+  </scroll-view>
+
+  <!-- 积分流水 -->
+  <scroll-view class="detail-list" scroll-y wx:if="{{activeTab === 1}}">
+    <view class="log-item" wx:for="{{logs}}" wx:key="index">
+      <text class="log-time">{{item.timeStr}}</text>
+      <text class="log-desc">{{item.desc}}</text>
+      <text class="log-points {{item.points > 0 ? 'earn' : 'spend'}}">
+        {{item.points > 0 ? '+' : ''}}{{item.points}}⭐
+      </text>
+    </view>
+    <view wx:if="{{logs.length === 0}}" class="empty">暂无积分变动</view>
+  </scroll-view>
+
+  <!-- 兑换记录 -->
+  <scroll-view class="detail-list" scroll-y wx:if="{{activeTab === 2}}">
+    <view class="log-item" wx:for="{{redeemLogs}}" wx:key="index">
+      <text class="log-time">{{item.timeStr}}</text>
+      <text class="log-desc">{{item.desc}}</text>
+      <text class="log-points spend">-{{Math.abs(item.points)}}⭐</text>
+    </view>
+    <view wx:if="{{redeemLogs.length === 0}}" class="empty">暂无兑换记录</view>
+  </scroll-view>
+
+  <!-- AI练习记录 -->
+  <scroll-view class="detail-list" scroll-y wx:if="{{activeTab === 3}}">
+    <view wx:if="{{radarData.length >= 3}}" class="radar-container">
+      <view class="radar-title">📊 知识点掌握雷达图</view>
+      <chart-radar data="{{radarChartData}}" options="{{radarChartOptions}}"></chart-radar>
+    </view>
+    <view wx:if="{{aiRecords.length >= 2}}" class="chart-container">
+      <chart-line data="{{lineChartData}}" options="{{lineChartOptions}}"></chart-line>
+    </view>
+    <view class="log-item" wx:for="{{aiRecords}}" wx:key="index">
+      <text class="log-time">{{item.timeStr}}</text>
+      <text class="log-desc">
+        <text>{{item.subject}} · {{item.knowledge}}</text>
+      </text>
+      <view class="ai-record-info">
+        <text class="ai-record-text">{{item.textbook}} {{item.preference}}</text>
+        <text class="ai-record-score {{item.correctRate >= 80 ? 'score-good' : item.correctRate >= 50 ? 'score-mid' : 'score-low'}}">
+          {{item.correctRate}}%
+        </text>
+      </view>
+    </view>
+    <view wx:if="{{aiRecords.length === 0}}" class="empty">暂无AI练习记录</view>
+  </scroll-view>
+</view>

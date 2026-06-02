@@ -1,0 +1,31 @@
+<view class="badges-page">
+  <!-- 统计头 -->
+  <view class="badge-header">
+    <text class="header-title">🏆 成就墙</text>
+    <text class="header-sub">{{totalEarned}} / {{totalCount}} 已解锁</text>
+  </view>
+
+  <!-- 进度条 -->
+  <view class="progress-bar-bg">
+    <view class="progress-bar-fill" style="width: {{totalCount > 0 ? totalEarned / totalCount * 100 : 0}}%"></view>
+  </view>
+
+  <!-- 徽章网格 -->
+  <view class="badge-grid">
+    <view wx:for="{{badges}}" wx:key="key" class="badge-card {{item.earned ? 'badge-earned' : 'badge-locked'}}">
+      <view class="badge-tier">{{item.tier}}</view>
+      <view class="badge-icon-wrap">
+        <text class="badge-icon">{{item.earned ? item.emoji : '🔒'}}</text>
+      </view>
+      <text class="badge-title">{{item.earned ? item.name : '???'}}</text>
+      <text class="badge-desc">{{item.earned ? item.desc : '继续努力解锁'}}</text>
+      <view wx:if="{{item.earned}}" class="badge-tag earned-tag">已获得</view>
+      <view wx:else class="badge-tag locked-tag">未解锁</view>
+    </view>
+  </view>
+
+  <!-- 底部提示 -->
+  <view class="badge-footer">
+    <text>坚持打卡 · 解锁全部成就！</text>
+  </view>
+</view>

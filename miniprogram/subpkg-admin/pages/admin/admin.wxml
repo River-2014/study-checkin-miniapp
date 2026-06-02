@@ -1,0 +1,321 @@
+<view class="admin-page">
+
+  <!-- 高级功能入口 -->
+  <view class="nav-row">
+    <button class="nav-btn" bindtap="goQuestionManage">题库管理（新）</button>
+    <button class="nav-btn" bindtap="goStats">统计分析</button>
+    <button class="nav-btn" bindtap="goReviewQueue">审核队列</button>
+  </view>
+
+  <!-- TAB 切换 -->
+  <view class="tab-bar">
+    <view class="tab-item {{tabIndex === 0 ? 'tab-active' : ''}}" data-index="0" bindtap="switchTab">
+      题库管理
+    </view>
+    <view class="tab-item {{tabIndex === 1 ? 'tab-active' : ''}}" data-index="1" bindtap="switchTab">
+      试卷管理
+    </view>
+  </view>
+
+  <!-- ==========================================
+       题库管理 TAB
+       ========================================== -->
+  <view wx:if="{{tabIndex === 0}}">
+
+    <!-- 题库统计 -->
+    <view class="card stats-card">
+      <view class="section-title">📊 题库统计</view>
+      <view class="stats-row">
+        <text class="stats-num">{{stats ? stats.totalQuestions : '...'}}</text>
+        <text class="stats-label">道题目</text>
+      </view>
+      <button class="btn btn-small" style="margin-top:12rpx; background:#F0F0F0; color:#636E72;" bindtap="loadStats">🔄 刷新统计</button>
+    </view>
+
+    <!-- 手动录入题目 -->
+    <view class="card">
+      <view class="section-title">✍️ 手动录入题目</view>
+      <button class="btn btn-primary btn-block" wx:if="{{!showAddForm}}" bindtap="toggleAddForm">📝 新建题目</button>
+
+      <view wx:if="{{showAddForm}}" class="add-form">
+        <view class="form-row">
+          <text class="form-label">年级 / 科目</text>
+          <view class="form-pickers">
+            <picker mode="selector" range="{{gradeList}}" value="{{gradeIndex}}" bindchange="onGradeChange">
+              <text class="picker-link">{{gradeList[gradeIndex]}}</text>
+            </picker>
+            <picker mode="selector" range="{{subjects}}" value="{{subjectIndex}}" bindchange="onSubjectChange">
+              <text class="picker-link">{{subjects[subjectIndex]}}</text>
+            </picker>
+          </view>
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">题型 / 难度</text>
+          <view class="form-pickers">
+            <picker mode="selector" range="{{types}}" value="{{typeIndex}}" bindchange="onTypeChange">
+              <text class="picker-link">{{types[typeIndex]}}</text>
+            </picker>
+            <picker mode="selector" range="{{difficulties}}" value="{{difficultyIndex}}" bindchange="onDifficultyChange">
+              <text class="picker-link">{{difficulties[difficultyIndex]}}</text>
+            </picker>
+          </view>
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">题干</text>
+          <textarea class="form-input" placeholder="请输入题目内容" maxlength="500" value="{{form.stem}}" data-field="stem" bindinput="onFormFieldChange" />
+        </view>
+
+        <view class="form-row" wx:if="{{types[typeIndex] === '选择题'}}">
+          <text class="form-label">选项（每行一个）</text>
+          <textarea class="form-input" style="height:120rpx;" placeholder="第一行 A 选项&#10;第二行 B 选项&#10;..." maxlength="300" value="{{form.options}}" data-field="options" bindinput="onFormFieldChange" />
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">正确答案</text>
+          <input class="form-input-short" placeholder="如：B 或 18 或 √" maxlength="200" value="{{form.answer}}" data-field="answer" bindinput="onFormFieldChange" />
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">解析（可选）</text>
+          <textarea class="form-input" style="height:120rpx;" placeholder="解题思路" maxlength="500" value="{{form.explanation}}" data-field="explanation" bindinput="onFormFieldChange" />
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">考察点 / 知识点</text>
+          <input class="form-input-short" placeholder="用逗号分隔，如：百分数,运算" maxlength="100" value="{{form.knowledgePoints}}" data-field="knowledgePoints" bindinput="onFormFieldChange" />
+        </view>
+
+        <view class="form-actions">
+          <button class="btn btn-outline" bindtap="toggleAddForm">取消</button>
+          <button class="btn btn-primary" bindtap="submitQuestion" loading="{{formSubmitting}}" disabled="{{formSubmitting}}">提交</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 手动爬取（自动识别网站） -->
+    <view class="card">
+      <view class="section-title">🤖 手动爬取（自动识别网站）</view>
+      <view class="desc-text">
+        <text>输入题目页面或试卷列表页 URL，自动识别网站类型并爬取。</text>
+        <text>支持：51jiaoxi、5ykj、shijuan1、tiku 及大部分静态HTML题目页</text>
+      </view>
+
+      <view class="crawl-url-row">
+        <text class="form-label">目标网址</text>
+        <input class="form-input-short" placeholder="https://example.com/question-page.html" value="{{crawlUrl}}" bindinput="onCrawlUrlInput" />
+      </view>
+
+      <view class="crawl-mode-row">
+        <text class="form-label">爬取模式</text>
+        <radio-group class="radio-group" bindchange="onCrawlModeChange">
+          <label class="radio-label">
+            <radio value="questions" checked="{{crawlMode === 'questions'}}" color="#FF9F43" />
+            <text>题库模式</text>
+          </label>
+          <label class="radio-label">
+            <radio value="papers" checked="{{crawlMode === 'papers'}}" color="#FF9F43" />
+            <text>试卷模式</text>
+          </label>
+        </radio-group>
+      </view>
+
+      <view class="crawl-selector-row">
+        <text class="form-label">CSS 选择器（可选，默认自动识别）</text>
+        <input class="form-input-short" placeholder="如：.question、.stem" value="{{crawlSelector}}" bindinput="onCrawlSelectorInput" />
+      </view>
+
+      <button class="btn btn-primary btn-block" style="margin-top:16rpx;" bindtap="startAutoCrawl" loading="{{crawling}}" disabled="{{crawling}}">
+        {{crawling ? '爬取中...' : '🚀 开始爬取'}}
+      </button>
+
+      <view class="crawl-result" wx:if="{{crawlResult}}">
+        <view class="result-title">
+          <text wx:if="{{crawlResult.success}}" class="text-success">✅ 爬取完成</text>
+          <text wx:else class="text-error">⚠️ {{crawlResult.error || '爬取失败'}}</text>
+        </view>
+        <view class="result-rows" wx:if="{{crawlResult.success}}">
+          <text>🌐 站点：{{crawlResult.site || '-'}}</text>
+          <text>📝 发现：{{crawlResult.crawled}} 条</text>
+          <text>📋 题目 {{crawlResult.questionsCount || 0}} / 试卷 {{crawlResult.papersCount || 0}}</text>
+          <text>💾 入库：{{crawlResult.inserted}} 条（去重跳过 {{crawlResult.skipped}} 条）</text>
+          <text>⏱ 耗时：{{crawlResult.elapsedSeconds}} 秒</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 本地脚本说明 -->
+    <view class="card">
+      <view class="section-title">💻 批量导入题目</view>
+      <view class="desc-text">
+        <text>在电脑上运行脚本生成题库JSON，然后在云开发控制台导入：</text>
+      </view>
+      <view class="code-block">
+        <text>cd crawler</text>
+        <text>npm install</text>
+        <text>node crawler.js --subject=all --grade=all</text>
+        <text># 然后到云开发控制台 → 数据库 → exam_questions → 导入</text>
+        <text># 选择 output/questions_all_all.json</text>
+      </view>
+    </view>
+
+  </view>
+
+  <!-- ==========================================
+       试卷管理 TAB
+       ========================================== -->
+  <view wx:if="{{tabIndex === 1}}">
+
+    <!-- 试卷统计 -->
+    <view class="card stats-card">
+      <view class="section-title">📋 试卷库统计</view>
+      <view class="paper-stats-grid">
+        <view class="paper-stat-item">
+          <text class="ps-num">{{paperStats ? paperStats.total : '...'}}</text>
+          <text class="ps-label">总计</text>
+        </view>
+        <view class="paper-stat-item">
+          <text class="ps-num active">{{paperStats ? paperStats.active : '...'}}</text>
+          <text class="ps-label">可用试卷</text>
+        </view>
+        <view class="paper-stat-item">
+          <text class="ps-num meta">{{paperStats ? paperStats.metadata_only : '...'}}</text>
+          <text class="ps-label">仅元数据</text>
+        </view>
+      </view>
+      <view class="paper-stats-actions">
+        <button class="btn btn-small" style="background:#F0F0F0; color:#636E72;" bindtap="loadPaperStats">🔄 刷新</button>
+        <button class="btn btn-small btn-danger" style="background:#FFF0F0" bindtap="batchDeleteMetadataPapers" loading="{{batchDeleting}}">🗑️ 清理元数据</button>
+      </view>
+    </view>
+
+    <!-- 手动创建试卷 -->
+    <view class="card">
+      <view class="section-title">📝 手动创建试卷</view>
+      <button class="btn btn-primary btn-block" wx:if="{{!showPaperForm}}" bindtap="togglePaperForm">📄 新建试卷</button>
+
+      <view wx:if="{{showPaperForm}}" class="add-form">
+        <view class="form-row">
+          <text class="form-label">试卷标题 *</text>
+          <input class="form-input-short" placeholder="如：2025人教版六年级数学下册期末卷" value="{{paperForm.title}}" data-field="title" bindinput="onPaperFormFieldChange" />
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">学科 / 年级</text>
+          <view class="form-pickers">
+            <picker mode="selector" range="{{subjects}}" value="0" bindchange="onPaperFormSubjectChange">
+              <text class="picker-link">{{paperForm.subject}}</text>
+            </picker>
+            <picker mode="selector" range="{{gradeList}}" value="5" bindchange="onPaperFormGradeChange">
+              <text class="picker-link">{{paperForm.grade}}</text>
+            </picker>
+          </view>
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">年份 / 学期</text>
+          <view class="form-row-inline">
+            <input class="form-input-half" placeholder="如：2024-2025" value="{{paperForm.year}}" data-field="year" bindinput="onPaperFormFieldChange" />
+            <input class="form-input-half" placeholder="上学期 / 下学期" value="{{paperForm.term}}" data-field="term" bindinput="onPaperFormFieldChange" />
+          </view>
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">教材版本</text>
+          <input class="form-input-short" placeholder="如：人教版、苏教版" value="{{paperForm.version}}" data-field="version" bindinput="onPaperFormFieldChange" />
+        </view>
+
+        <view class="form-row">
+          <text class="form-label">满分 / 时长(分钟)</text>
+          <view class="form-row-inline">
+            <input class="form-input-half" type="number" placeholder="100" value="{{paperForm.totalScore}}" data-field="totalScore" bindinput="onPaperFormNumChange" />
+            <input class="form-input-half" type="number" placeholder="60" value="{{paperForm.duration}}" data-field="duration" bindinput="onPaperFormNumChange" />
+          </view>
+        </view>
+
+        <view class="form-actions">
+          <button class="btn btn-outline" bindtap="togglePaperForm">取消</button>
+          <button class="btn btn-primary" bindtap="submitPaper" loading="{{paperSubmitting}}" disabled="{{paperSubmitting}}">提交</button>
+        </view>
+      </view>
+
+      <view class="desc-text" style="margin-top:16rpx;">
+        <text>💡 提示：创建后还需通过 Excel 导入或爬虫补充大题和题目内容</text>
+      </view>
+    </view>
+
+    <!-- 试卷列表 -->
+    <view class="card">
+      <view class="section-title">📚 试卷列表（{{paperTotal}}）</view>
+
+      <!-- 筛选栏 -->
+      <view class="paper-filter">
+        <picker mode="selector" range="{{subjects}}" bindchange="onPaperSubjectChange">
+          <text class="picker-link">{{paperFilter.subject || '全部学科'}}</text>
+        </picker>
+        <picker mode="selector" range="{{gradeList}}" bindchange="onPaperGradeChange">
+          <text class="picker-link">{{paperFilter.grade || '全部年级'}}</text>
+        </picker>
+        <input class="filter-search" placeholder="🔍 搜索标题" value="{{paperFilter.keyword}}" data-field="keyword" bindinput="onPaperFilterChange" bindconfirm="searchPapers" />
+      </view>
+
+      <!-- 试卷卡片列表 -->
+      <view wx:if="{{paperList.length === 0 && !paperListLoading}}" class="empty-hint">暂无试卷</view>
+
+      <view wx:for="{{paperList}}" wx:key="_id" class="paper-card">
+        <view class="paper-card-head">
+          <text class="paper-title">{{item.title}}</text>
+          <text class="paper-status status-{{item.status}}">{{item.status === 'metadata_only' ? '仅元数据' : item.status === 'active' ? '可用' : '草稿'}}</text>
+        </view>
+        <view class="paper-card-meta">
+          <text>{{item.subject}} · {{item.grade}}</text>
+          <text wx:if="{{item.version}}">{{item.version}}</text>
+          <text wx:if="{{item.questionCount > 0}}">{{item.questionCount}} 题</text>
+          <text wx:if="{{item.totalScore > 0}}">{{item.totalScore}}分</text>
+          <text wx:if="{{item.year}}">{{item.year}}</text>
+        </view>
+        <view class="paper-card-source">
+          <text>来源：{{item.paperSource || '未知'}}</text>
+          <text>{{item.createdAt}}</text>
+        </view>
+        <view class="paper-card-actions">
+          <button class="btn btn-small btn-outline" data-id="{{item._id}}" bindtap="viewPaperDetail">👁️ 查看详情</button>
+          <button class="btn btn-small btn-danger" data-id="{{item._id}}" bindtap="deletePaper">🗑️ 删除</button>
+        </view>
+      </view>
+
+      <!-- 分页 -->
+      <view wx:if="{{paperTotal > 20}}" class="pagination">
+        <button class="btn btn-small" bindtap="prevPaperPage" disabled="{{paperPage <= 1}}">上一页</button>
+        <text class="page-info">{{paperPage}} / {{Math.ceil(paperTotal / 20) || 1}}</text>
+        <button class="btn btn-small" bindtap="nextPaperPage" disabled="{{paperPage * 20 >= paperTotal}}">下一页</button>
+      </view>
+    </view>
+
+    <!-- 批量导入说明 -->
+    <view class="card">
+      <view class="section-title">💻 批量导入试卷</view>
+      <view class="desc-text">
+        <text>在电脑上运行脚本生成试卷元数据JSON，然后在云开发控制台导入：</text>
+      </view>
+      <view class="code-block">
+        <text>cd crawler</text>
+        <text>node crawler.js --mode=papers --subject=all --grade=all</text>
+        <text># 然后到云开发控制台 → 数据库 → examination_papers → 导入</text>
+        <text># 选择 output/papers_all_all.json</text>
+      </view>
+    </view>
+
+  </view>
+
+  <!-- 安全声明 -->
+  <view class="card safety-card">
+    <view class="section-title">⚠️ 数据来源声明</view>
+    <view class="desc-text">
+      <text>手动录入和种子生成的题目仅供学习交流使用。</text>
+      <text>如有版权问题请联系删除。</text>
+    </view>
+  </view>
+
+</view>

@@ -1,0 +1,25 @@
+.lb-page { min-height: 100vh; background: #F5F6FA; padding: 20rpx; }
+.lb-tabs { display: flex; background: #fff; border-radius: 16rpx; padding: 6rpx; margin-bottom: 24rpx; }
+.lb-tab { flex: 1; text-align: center; padding: 16rpx 0; font-size: 28rpx; color: #636E72; border-radius: 12rpx; }
+.lb-tab.active { background: #FF9F43; color: #fff; font-weight: bold; }
+
+.lb-optin { text-align: center; padding: 100rpx 40rpx; }
+.lb-optin-title { font-size: 32rpx; font-weight: bold; color: #2D3436; display: block; margin-bottom: 12rpx; }
+.lb-optin-desc { font-size: 24rpx; color: #B2BEC3; display: block; margin-bottom: 40rpx; }
+.lb-optin-btn { background: linear-gradient(135deg, #FF9F43, #F39C12); color: #fff; border-radius: 40rpx; width: 400rpx; }
+
+.lb-list { background: #fff; border-radius: 16rpx; overflow: hidden; }
+.lb-item { display: flex; align-items: center; padding: 20rpx 24rpx; border-bottom: 2rpx solid #F8F8F8; }
+.lb-item:last-child { border-bottom: none; }
+.lb-item.top-1 { background: linear-gradient(90deg, #FFF8E1, #fff); }
+.lb-item.top-2 { background: linear-gradient(90deg, #F5F5F5, #fff); }
+.lb-item.top-3 { background: linear-gradient(90deg, #FFF3E0, #fff); }
+.lb-rank { font-size: 40rpx; width: 60rpx; text-align: center; }
+.lb-info { flex: 1; display: flex; flex-direction: column; }
+.lb-name { font-size: 28rpx; color: #2D3436; font-weight: 500; }
+.lb-sub { font-size: 22rpx; color: #B2BEC3; }
+.lb-value { text-align: right; }
+.lb-num { font-size: 36rpx; font-weight: bold; color: #FF9F43; }
+.lb-unit { font-size: 24rpx; color: #B2BEC3; }
+.lb-empty { text-align: center; padding: 80rpx; color: #B2BEC3; font-size: 26rpx; }
+.lb-footer { text-align: center; padding: 30rpx; }

@@ -1,0 +1,32 @@
+.container { padding: 20rpx 30rpx; background: #FFF8F0; min-height: 100vh; }
+.section-title { font-size: 36rpx; font-weight: bold; margin-bottom: 10rpx; color: #FF6B35; }
+.count-info { font-size: 24rpx; color: #B2BEC3; }
+.card {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 24rpx 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 16rpx rgba(0,0,0,0.04);
+}
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12rpx; }
+.subject { font-size: 24rpx; font-weight: 600; color: #FF6B35; }
+.diff {
+  font-size: 20rpx; background: #FFF3E0; padding: 4rpx 14rpx; border-radius: 8rpx; color: #E17055;
+}
+.q-type { font-size: 22rpx; color: #B2BEC3; margin-bottom: 8rpx; }
+.q-content { font-size: 30rpx; font-weight: 500; line-height: 1.6; margin-bottom: 16rpx; color: #2D3436; }
+.options { display: flex; flex-direction: column; gap: 8rpx; margin-bottom: 16rpx; }
+.opt-item { font-size: 26rpx; color: #636E72; }
+.opt-label { font-weight: bold; color: #FF6B35; margin-right: 8rpx; }
+.answer-section { background: #F8F9FA; border-radius: 12rpx; padding: 16rpx; margin-bottom: 16rpx; }
+.answer-label { font-weight: 600; color: #2ECC71; font-size: 26rpx; display: block; margin-bottom: 8rpx; }
+.analysis-text, .exam-point { font-size: 24rpx; color: #636E72; line-height: 1.5; display: block; margin-top: 6rpx; }
+.actions { display: flex; gap: 16rpx; }
+.actions button { flex: 1; font-size: 24rpx; padding: 10rpx 0; border-radius: 12rpx; }
+.btn-retry { background: #FF6B35; color: #fff; }
+.btn-mastered { background: #2ED573; color: #fff; }
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20rpx; }
+.btn-export { font-size: 24rpx; padding: 8rpx 20rpx; border-radius: 12rpx; background: #6C5CE7; color: #fff; }
+.export-canvas { position: fixed; left: -9999px; top: -9999px; width: 750px; height: 1500px; }
+.empty { display: flex; flex-direction: column; align-items: center; padding: 120rpx 0; color: #B2BEC3; font-size: 28rpx; }
+.empty-icon { font-size: 64rpx; margin-bottom: 16rpx; }

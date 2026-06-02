@@ -1,0 +1,22 @@
+<view class="container">
+  <view class="title">请选择你的身份</view>
+  <view class="subtitle">选择后可在「我的」页面随时切换</view>
+
+  <view class="role-card" bindtap="selectRole" data-role="student">
+    <text class="role-emoji">👦</text>
+    <view class="role-info">
+      <text class="role-name">学生模式</text>
+      <text class="role-desc">打卡学习 · AI 出题 · 错题本</text>
+    </view>
+    <text class="role-arrow">›</text>
+  </view>
+
+  <view class="role-card" bindtap="selectRole" data-role="parent">
+    <text class="role-emoji">👨‍👩‍👧</text>
+    <view class="role-info">
+      <text class="role-name">家长模式</text>
+      <text class="role-desc">查看数据明细 · 管理任务和奖励</text>
+    </view>
+    <text class="role-arrow">›</text>
+  </view>
+</view>

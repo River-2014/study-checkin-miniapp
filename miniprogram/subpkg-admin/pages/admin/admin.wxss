@@ -1,0 +1,215 @@
+.admin-page {
+  padding: 24rpx;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+  background: #FFF8E7;
+  min-height: 100vh;
+}
+
+/* ===== 新功能入口导航 ===== */
+.nav-row {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+.nav-btn {
+  flex: 1;
+  font-size: 26rpx;
+  background: #FF9F43;
+  color: #fff;
+  border-radius: 12rpx;
+  padding: 12rpx 0;
+}
+
+/* ===== TAB 切换 ===== */
+.tab-bar {
+  display: flex;
+  background: #FFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #636E72;
+  transition: all 0.2s;
+}
+.tab-active {
+  color: #FFF;
+  background: linear-gradient(135deg, #FF9F43, #FF6B6B);
+}
+
+/* ===== 题库统计 ===== */
+.stats-card { text-align: center; }
+.stats-row { padding: 16rpx 0; }
+.stats-num { font-size: 64rpx; font-weight: bold; color: #FF9F43; display: block; }
+.stats-label { font-size: 26rpx; color: #B2BEC3; }
+
+/* ===== 录题表单 ===== */
+.add-form { margin-top: 16rpx; }
+.form-row { margin-bottom: 20rpx; }
+.form-label { font-size: 26rpx; color: #636E72; display: block; margin-bottom: 8rpx; font-weight: 500; }
+.form-pickers { display: flex; gap: 20rpx; }
+.picker-link { font-size: 28rpx; color: #FF9F43; font-weight: 500; }
+.form-input {
+  width: 100%; height: 160rpx;
+  border: 2rpx solid #E8E8E8; border-radius: 12rpx;
+  padding: 16rpx; font-size: 28rpx;
+  box-sizing: border-box;
+}
+.form-input-short {
+  width: 100%; height: 72rpx;
+  border: 2rpx solid #E8E8E8; border-radius: 12rpx;
+  padding: 0 16rpx; font-size: 28rpx;
+  box-sizing: border-box;
+}
+.form-input-half {
+  flex: 1; height: 72rpx;
+  border: 2rpx solid #E8E8E8; border-radius: 12rpx;
+  padding: 0 12rpx; font-size: 28rpx;
+  box-sizing: border-box;
+}
+.form-row-inline { display: flex; gap: 12rpx; }
+.form-actions { display: flex; gap: 16rpx; margin-top: 24rpx; }
+.form-actions .btn { flex: 1; margin: 0; }
+
+/* 爬取表单 */
+.crawl-url-row, .crawl-mode-row, .crawl-selector-row {
+  margin-top: 16rpx;
+}
+.radio-group {
+  display: flex; gap: 32rpx; margin-top: 8rpx;
+}
+.radio-label {
+  display: flex; align-items: center; gap: 8rpx;
+  font-size: 28rpx; color: #2D3436;
+}
+
+/* 爬取结果 */
+.crawl-result {
+  margin-top: 20rpx; padding: 20rpx;
+  background: #FAFAFA; border-radius: 12rpx;
+}
+.result-title { font-size: 28rpx; font-weight: bold; margin-bottom: 12rpx; }
+.text-success { color: #2ED573; }
+.text-error { color: #FF6B6B; }
+.result-rows { display: flex; flex-direction: column; gap: 6rpx; font-size: 26rpx; color: #636E72; }
+
+/* 代码块 */
+.code-block {
+  background: #2D3436; color: #DFE6E9;
+  padding: 20rpx; border-radius: 12rpx;
+  font-family: monospace; font-size: 24rpx;
+  line-height: 1.8; margin-top: 12rpx;
+  display: flex; flex-direction: column;
+}
+
+.desc-text {
+  font-size: 26rpx; color: #636E72;
+  line-height: 1.8;
+  display: flex; flex-direction: column; gap: 6rpx;
+}
+
+.safety-card { background: #FFF3E0; }
+.safety-card .desc-text { color: #E17055; }
+
+/* ===== 试卷统计网格 ===== */
+.paper-stats-grid {
+  display: flex;
+  justify-content: space-around;
+  padding: 20rpx 0;
+}
+.paper-stat-item { text-align: center; }
+.ps-num {
+  font-size: 48rpx; font-weight: bold;
+  color: #636E72; display: block;
+}
+.ps-num.active { color: #2ED573; }
+.ps-num.meta { color: #B2BEC3; }
+.ps-label { font-size: 24rpx; color: #B2BEC3; }
+.paper-stats-actions {
+  display: flex; gap: 12rpx;
+  justify-content: center;
+  margin-top: 8rpx;
+}
+
+/* ===== 试卷筛选 ===== */
+.paper-filter {
+  display: flex; align-items: center;
+  gap: 12rpx; margin: 16rpx 0;
+  flex-wrap: wrap;
+}
+.filter-search {
+  flex: 1; min-width: 160rpx; height: 60rpx;
+  border: 2rpx solid #E8E8E8; border-radius: 10rpx;
+  padding: 0 12rpx; font-size: 26rpx;
+  box-sizing: border-box;
+}
+
+/* ===== 试卷卡片 ===== */
+.empty-hint {
+  text-align: center; padding: 40rpx 0;
+  color: #B2BEC3; font-size: 28rpx;
+}
+.paper-card {
+  background: #FAFAFA;
+  border-radius: 14rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+  border-left: 6rpx solid #FF9F43;
+}
+.paper-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10rpx;
+}
+.paper-title {
+  font-size: 28rpx; font-weight: 600; color: #2D3436;
+  flex: 1; line-height: 1.4;
+}
+.paper-status {
+  font-size: 22rpx; padding: 4rpx 12rpx; border-radius: 8rpx;
+  margin-left: 12rpx; flex-shrink: 0;
+}
+.status-active { background: #E8F8E8; color: #2ED573; }
+.status-metadata_only { background: #F0F0F0; color: #B2BEC3; }
+.status-draft { background: #FFF3E0; color: #FF9F43; }
+
+.paper-card-meta {
+  display: flex; flex-wrap: wrap; gap: 8rpx 16rpx;
+  font-size: 24rpx; color: #636E72;
+  margin-bottom: 8rpx;
+}
+.paper-card-source {
+  display: flex; gap: 16rpx;
+  font-size: 22rpx; color: #B2BEC3;
+  margin-bottom: 12rpx;
+}
+.paper-card-actions {
+  display: flex; gap: 12rpx;
+  justify-content: flex-end;
+}
+
+/* ===== 分页 ===== */
+.pagination {
+  display: flex; align-items: center;
+  justify-content: center; gap: 16rpx;
+  margin-top: 20rpx;
+}
+.page-info {
+  font-size: 26rpx; color: #636E72;
+}
+
+/* ===== 通用按钮 ===== */
+.btn-small {
+  font-size: 24rpx; padding: 10rpx 24rpx;
+  border-radius: 8rpx;
+}
+.btn-danger {
+  background: #FFE0E0; color: #FF6B6B;
+}

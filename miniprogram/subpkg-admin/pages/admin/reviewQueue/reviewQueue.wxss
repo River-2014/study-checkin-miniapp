@@ -1,0 +1,9 @@
+.container { padding-bottom: 40rpx; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 20rpx; background: #fff; border-bottom: 1px solid #eee; font-size: 28rpx; }
+.review-list { height: calc(100vh - 100rpx); }
+.review-item { padding: 20rpx; border-bottom: 1px solid #f0f0f0; }
+.r-stem { font-size: 28rpx; color: #333; margin-bottom: 10rpx; }
+.r-meta { display: flex; gap: 8rpx; margin-bottom: 12rpx; }
+.tag { padding: 2rpx 10rpx; background: #e8f5e9; color: #2e7d32; border-radius: 4rpx; font-size: 22rpx; }
+.r-actions { display: flex; gap: 12rpx; }
+.empty { text-align: center; padding: 120rpx; color: #999; font-size: 28rpx; }
