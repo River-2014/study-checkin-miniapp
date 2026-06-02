@@ -12,7 +12,11 @@ Page({
     lineChartData: { items: [] },
     lineChartOptions: { padding: { top: 30, right: 20, bottom: 40, left: 50 } },
     radarChartData: { items: [] },
-    radarChartOptions: { padding: { top: 25, right: 25, bottom: 25, left: 25 }, levels: 4 }
+    radarChartOptions: { padding: { top: 25, right: 25, bottom: 25, left: 25 }, levels: 4 },
+    weekChartData: { items: [] },
+    weekChartOptions: { padding: { top: 25, right: 15, bottom: 30, left: 40 } },
+    subjChartData: { items: [] },
+    subjChartOptions: { padding: { top: 25, right: 15, bottom: 30, left: 40 } }
   },
 
   onShow() { this.loadData(); },
@@ -80,13 +84,38 @@ Page({
     }
     aiRecords.reverse();
 
-    this.setData({ groupedCheckins: grouped, logs: formattedLogs, redeemLogs: redeemLogs, aiRecords: aiRecords });
-
-    // 切换到 AI 选项卡时准备图表
-    if (this.data.activeTab === 3) {
-      this.calcRadarData();
-      this.prepareLineChart();
+    // 周完成热力图（最近7天）
+    var weekLabels = [];
+    var weekValues = [];
+    for (var w = 6; w >= 0; w--) {
+      var d = new Date();
+      d.setDate(d.getDate() - w);
+      var ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      var dl = String(d.getMonth()+1) + '/' + d.getDate();
+      var cnt = checkins[ds] ? checkins[ds].length : 0;
+      weekLabels.push(dl);
+      weekValues.push(Math.min(cnt, 5)); // 最多5项标准化
     }
+    var weekChart = { items: [] };
+    for (var wv = 0; wv < weekValues.length; wv++) {
+      weekChart.items.push({ label: weekLabels[wv], value: Math.round(weekValues[wv] / 5 * 100) });
+    }
+
+    // 学科分布
+    var cats = appData.categoryStats || {};
+    var subjChart = { items: [] };
+    var subjs = ['语文', '数学', '英语'];
+    for (var s = 0; s < subjs.length; s++) {
+      subjChart.items.push({ label: subjs[s], value: cats[subjs[s]] || 0 });
+    }
+
+    this.setData({
+      groupedCheckins: grouped, logs: formattedLogs, redeemLogs: redeemLogs, aiRecords: aiRecords,
+      weekChartData: weekChart, subjChartData: subjChart
+    });
+
+    this.calcRadarData();
+    this.prepareLineChart();
   },
 
   _fmt: function(iso) {

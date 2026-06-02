@@ -9,6 +9,7 @@ Page({
     loading: false,
     isParent: false,
     contracts: [],
+    pendingRedeems: [],
     templates: storage.CONTRACT_TEMPLATES || [],
     tabIndex: 0  // 0=家庭, 1=契约
   },
@@ -27,7 +28,26 @@ Page({
   /** 加载契约列表 */
   loadContracts: function() {
     var data = storage.getAppData();
-    this.setData({ contracts: data.contracts || [] });
+    this.setData({
+      contracts: data.contracts || [],
+      pendingRedeems: (data.pendingRedeems || []).filter(function(r) { return r.status === 'pending'; })
+    });
+  },
+
+  /** 家长确认兑现 */
+  onApproveRedeem: function(e) {
+    var rid = e.currentTarget.dataset.id;
+    storage.approveRedeem(rid);
+    wx.showToast({ title: '已确认兑现！', icon: 'success' });
+    this.loadContracts();
+  },
+
+  /** 家长拒绝兑现 */
+  onRejectRedeem: function(e) {
+    var rid = e.currentTarget.dataset.id;
+    storage.rejectRedeem(rid);
+    wx.showToast({ title: '已拒绝，积分退回', icon: 'none' });
+    this.loadContracts();
   },
 
   /** 家长创建契约 */

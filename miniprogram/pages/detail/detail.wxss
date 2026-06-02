@@ -3,6 +3,8 @@
 .tab { flex: 1; text-align: center; padding: 20rpx 0; font-size: 26rpx; color: #636E72; }
 .tab.active { background: #FF9F43; color: #fff; font-weight: 700; }
 .detail-list { background: #fff; border-radius: 20rpx; padding: 8rpx 24rpx; }
+.mini-chart { background: #fff; border-radius: 16rpx; padding: 16rpx; margin-bottom: 16rpx; }
+.mini-chart-title { font-size: 26rpx; font-weight: bold; color: #2D3436; margin-bottom: 10rpx; display: block; }
 .date-title { font-size: 28rpx; font-weight: 700; color: #FF9F43; margin: 20rpx 0 12rpx; }
 .log-item { display: flex; align-items: center; padding: 18rpx 0; border-bottom: 1rpx solid #F5F5F5; }
 .log-item:last-child { border-bottom: none; }

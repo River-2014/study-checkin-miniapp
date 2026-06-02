@@ -148,7 +148,8 @@ function initData() {
     wrongBook: [],                // [{ id, content, type, difficulty, options, answer, analysis, examPoint, subject, knowledge, addedTime }]
     aiRecords: [],                // [{ time, subject, knowledge, difficulty, type, textbook, preference, totalCount, correctCount }]
     dailyMetrics: {},             // { "YYYY-MM-DD": { active, checkedIn } } DECR 北极星指标
-    contracts: []                 // [{ id, title, condition, reward, status, progress, childSigned, createdAt }]
+    contracts: [],                // [{ id, title, condition, reward, status, progress, childSigned, createdAt }]
+    pendingRedeems: []            // [{ id, rewardId, rewardName, cost, status, createdAt, approvedAt }]
   };
 }
 
@@ -587,6 +588,57 @@ function redeemReward(rewardId) {
   return { success: true, msg: `兑换成功！已扣除 ${reward.cost} 积分` };
 }
 
+/** 提交兑换申请（需家长确认） */
+function requestRedeem(rewardId) {
+  var data = getAppData();
+  var reward = data.rewards.find(function(r) { return r.id === rewardId; });
+  if (!reward) return { success: false, msg: '奖励不存在' };
+  if (data.user.stars < reward.cost) return { success: false, msg: '积分不足' };
+
+  // 冻结积分
+  data.user.stars -= reward.cost;
+  var redeemId = 'r_' + String(data.nextLogId++);
+  data.pendingRedeems = data.pendingRedeems || [];
+  data.pendingRedeems.push({
+    id: redeemId,
+    rewardId: reward.id,
+    rewardName: reward.name,
+    cost: reward.cost,
+    status: 'pending',  // pending|approved|rejected
+    createdAt: new Date().toISOString()
+  });
+  addPointsLog(data, 'spend', reward.cost, '申请兑换「' + reward.name + '」（待家长确认）', reward.id);
+  saveAppData(data);
+  return { success: true, msg: '已提交兑换申请，等待家长确认', redeemId: redeemId };
+}
+
+/** 家长确认兑现 */
+function approveRedeem(redeemId) {
+  var data = getAppData();
+  var pr = (data.pendingRedeems || []).find(function(r) { return r.id === redeemId; });
+  if (!pr) return { success: false, msg: '申请不存在' };
+  if (pr.status !== 'pending') return { success: false, msg: '该申请已处理' };
+  pr.status = 'approved';
+  pr.approvedAt = new Date().toISOString();
+  addLog(data.logs, 'redeem_approved', '家长确认兑现「' + pr.rewardName + '」', 0);
+  saveAppData(data);
+  return { success: true, msg: '已确认兑现！' };
+}
+
+/** 家长拒绝兑现 */
+function rejectRedeem(redeemId) {
+  var data = getAppData();
+  var pr = (data.pendingRedeems || []).find(function(r) { return r.id === redeemId; });
+  if (!pr) return { success: false, msg: '申请不存在' };
+  if (pr.status !== 'pending') return { success: false, msg: '该申请已处理' };
+  pr.status = 'rejected';
+  // 退分
+  data.user.stars += pr.cost;
+  addPointsLog(data, 'earn', pr.cost, '兑换「' + pr.rewardName + '」被拒绝，积分退回', pr.rewardId);
+  saveAppData(data);
+  return { success: true, msg: '已拒绝，积分退回' };
+}
+
 function resetRewards() {
   const data = getAppData();
   data.rewards = JSON.parse(JSON.stringify(DEFAULT_REWARDS));
@@ -914,6 +966,9 @@ module.exports = {
   resetTasks,
   getRewards,
   redeemReward,
+  requestRedeem,
+  approveRedeem,
+  rejectRedeem,
   resetRewards,
   resetAllData,
   addStars,

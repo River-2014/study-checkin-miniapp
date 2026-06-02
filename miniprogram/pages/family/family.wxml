@@ -55,6 +55,21 @@
       </view>
     </view>
 
+    <!-- 待审批兑换（家长端） -->
+    <view class="family-card" wx:if="{{isParent && pendingRedeems.length > 0}}">
+      <view class="family-section-title">🔔 待审批兑换</view>
+      <view class="redeem-item" wx:for="{{pendingRedeems}}" wx:key="id">
+        <view class="redeem-info">
+          <text class="redeem-name">{{item.rewardName}}</text>
+          <text class="redeem-cost">{{item.cost}}⭐ · {{item.createdAt}}</text>
+        </view>
+        <view class="redeem-actions">
+          <button size="mini" type="primary" bindtap="onApproveRedeem" data-id="{{item.id}}">确认</button>
+          <button size="mini" type="warn" bindtap="onRejectRedeem" data-id="{{item.id}}">拒绝</button>
+        </view>
+      </view>
+    </view>
+
     <!-- 契约列表 -->
     <view class="family-card">
       <view class="family-section-title">📋 全部契约</view>

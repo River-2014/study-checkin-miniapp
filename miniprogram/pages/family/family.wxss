@@ -163,3 +163,9 @@
 .ct-bar { height: 8rpx; background: #F0F0F0; border-radius: 4rpx; margin-bottom: 12rpx; }
 .ct-bar-fill { height: 100%; background: linear-gradient(90deg, #6C5CE7, #A29BFE); border-radius: 4rpx; transition: width 0.5s; }
 .ct-actions { display: flex; gap: 12rpx; }
+.redeem-item { display: flex; align-items: center; padding: 16rpx 0; border-bottom: 2rpx solid #F8F8F8; }
+.redeem-item:last-child { border-bottom: none; }
+.redeem-info { flex: 1; }
+.redeem-name { font-size: 26rpx; color: #2D3436; font-weight: 500; display: block; }
+.redeem-cost { font-size: 22rpx; color: #B2BEC3; }
+.redeem-actions { display: flex; gap: 12rpx; }

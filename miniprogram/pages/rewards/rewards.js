@@ -34,12 +34,12 @@ Page({
     // 二次确认
     wx.showModal({
       title: '确认兑换',
-      content: `确定要用 ${reward.cost} ⭐ 兑换「${reward.icon} ${reward.name}」吗？`,
+      content: `确定要用 ${reward.cost} ⭐ 兑换「${reward.icon} ${reward.name}」吗？\n\n提交后将由家长确认兑现`,
       success: (res) => {
         if (res.confirm) {
-          const result = storage.redeemReward(id);
+          var result = storage.requestRedeem(id);
           if (result.success) {
-            wx.showToast({ title: result.msg, icon: 'success' });
+            wx.showToast({ title: result.msg, icon: 'success', duration: 2000 });
             this.loadData();
           } else {
             wx.showToast({ title: result.msg, icon: 'none' });

@@ -1,16 +1,50 @@
 /** 首页 - 打卡页 */
 const storage = require('../../utils/storage');
 
-const ENCOURAGE_LIST = [
-  '太棒了！离梦想更近了🌟',
-  '坚持就是胜利💪',
-  '你是最棒的！🏆',
-  '今天的努力，明天的收获🌱',
-  '爸爸妈妈为你骄傲❤️',
-  '又向前迈了一步📈',
-  '学习使我快乐😊',
-  '加油，小升初必胜🔥'
+var ENCOURAGE_LIST = [
+  // 通用
+  '太棒了！离梦想更近了🌟', '坚持就是胜利💪', '你是最棒的！🏆',
+  '今天的努力，明天的收获🌱', '爸爸妈妈为你骄傲❤️', '又向前迈了一步📈',
+  '学习使我快乐😊', '加油，小升初必胜🔥',
+  // 语文
+  '腹有诗书气自华📖', '文字的力量伴你成长✏️',
+  // 数学
+  '逻辑小达人！数学因你而简单🧮', '数字在跳舞，你在闪闪发光✨',
+  // 英语
+  'Practice makes perfect! 🔤', 'Every word counts! 🌍',
+  // 清晨 (0-10)
+  '一日之计在于晨，好的开始是成功的一半☀️',
+  // 午后 (12-17)
+  '下午也要元气满满！🌤️',
+  // 晚间 (18-23)
+  '夜猫子也闪耀！睡前打卡好梦相随🌙',
+  // 深夜 (0-5)
+  '黎明前的努力最珍贵🌟', '深夜的坚持，未来的王牌🃏',
+  // 周末
+  '周末学习，悄悄超越所有人🚀', '周末也在进步，自律是最酷的事😎',
+  // 连击突破
+  '连续打卡新纪录！你就是传奇🔥', '每一次坚持都在书写你的故事📝'
 ];
+
+/** 根据学科和时段选择鼓励语 */
+function pickEncourage(subject, hour) {
+  var pool = [];
+  if (subject === '语文') pool = ENCOURAGE_LIST.slice(8, 10);
+  else if (subject === '数学') pool = ENCOURAGE_LIST.slice(10, 12);
+  else if (subject === '英语') pool = ENCOURAGE_LIST.slice(12, 14);
+
+  if (hour < 6) pool = pool.concat(ENCOURAGE_LIST.slice(18, 20));
+  else if (hour < 10) pool = pool.concat([ENCOURAGE_LIST[14]]);
+  else if (hour < 18) pool = pool.concat([ENCOURAGE_LIST[15]]);
+  else pool = pool.concat([ENCOURAGE_LIST[16]]);
+
+  var day = new Date().getDay();
+  if (day === 0 || day === 6) pool = pool.concat(ENCOURAGE_LIST.slice(20, 22));
+
+  // 至少混入2条通用语
+  pool = pool.concat(ENCOURAGE_LIST.slice(0, 8));
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
 const CONFETTI_EMOJIS = ['🎉', '🌟', '✨', '⭐', '🌈', '🎊', '💫', '🌸', '🎀', '🏆'];
 
@@ -538,8 +572,8 @@ Page({
       storage.trackDailyMetric('checkin');
       // 更新契约进度
       storage.updateContractProgress();
-      // 播放动画
-      this.playCelebrate();
+      // 播放动画（传入任务科目）
+      this.playCelebrate(task ? task.category : '');
 
       // 生成分享卡片
       this.generateShareCard();
@@ -619,9 +653,10 @@ Page({
   },
 
   /** 播放庆祝效果 */
-  playCelebrate() {
-    // 鼓励语
-    const msg = ENCOURAGE_LIST[Math.floor(Math.random() * ENCOURAGE_LIST.length)];
+  playCelebrate(category) {
+    // 鼓励语：根据学科和时段动态选择
+    var hour = new Date().getHours();
+    var msg = pickEncourage(category || '', hour);
     wx.showToast({
       title: msg,
       icon: 'none',

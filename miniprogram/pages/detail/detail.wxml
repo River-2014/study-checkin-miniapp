@@ -16,6 +16,14 @@
         <text class="log-points earn">+{{item.points}}⭐</text>
       </view>
     </block>
+    <view wx:if="{{groupedCheckins.length > 0}}" class="mini-chart">
+      <text class="mini-chart-title">本周打卡热力图</text>
+      <chart-bar data="{{weekChartData}}" options="{{weekChartOptions}}" wx:if="{{weekChartData.items.length > 0}}"></chart-bar>
+    </view>
+    <view wx:if="{{groupedCheckins.length > 0}}" class="mini-chart">
+      <text class="mini-chart-title">学科完成分布</text>
+      <chart-bar data="{{subjChartData}}" options="{{subjChartOptions}}" wx:if="{{subjChartData.items.length > 0}}"></chart-bar>
+    </view>
     <view wx:if="{{groupedCheckins.length === 0}}" class="empty">暂无打卡记录 开始学习吧！🚀</view>
   </scroll-view>
 
