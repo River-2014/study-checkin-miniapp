@@ -15,7 +15,7 @@
   <!-- 榜单 -->
   <block wx:if="{{optedIn}}">
     <view class="lb-list">
-      <view class="lb-item {{item.rank <= 3 ? 'top-' + item.rank : ''}}" wx:for="{{tab === 0 ? streakList : starsList}}" wx:key="rank">
+      <view class="lb-item {{item.rank <= 3 ? 'top-' + item.rank : ''}}" wx:for="{{currentList}}" wx:key="rank">
         <view class="lb-rank">{{item.medal}}</view>
         <view class="lb-info">
           <text class="lb-name">{{item.nickname}}</text>
@@ -26,7 +26,7 @@
           <text class="lb-unit">{{tab === 0 ? '天' : '⭐'}}</text>
         </view>
       </view>
-      <view wx:if="{{(tab === 0 ? streakList : starsList).length === 0}}" class="lb-empty">暂无数据，快去打卡吧！</view>
+      <view wx:if="{{currentList.length === 0}}" class="lb-empty">暂无数据，快去打卡吧！</view>
     </view>
     <view class="lb-footer">
       <button size="mini" type="default" bindtap="optOut">退出排行榜</button>

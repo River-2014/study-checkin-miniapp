@@ -5,6 +5,7 @@ Page({
     tab: 0,  // 0=连续打卡, 1=周积分
     streakList: [],
     starsList: [],
+    currentList: [],
     myRank: null,
     optedIn: false
   },
@@ -71,9 +72,12 @@ Page({
     }).then(function(res) {
       var r = res.result || {};
       if (r.success) {
+        var sl = (r.streakRank || []).map(that._formatItem);
+        var stl = (r.starsRank || []).map(that._formatItem);
         that.setData({
-          streakList: (r.streakRank || []).map(that._formatItem),
-          starsList: (r.starsRank || []).map(that._formatItem),
+          streakList: sl,
+          starsList: stl,
+          currentList: sl,
           myRank: r.myRank || null
         });
       }
@@ -102,6 +106,10 @@ Page({
   },
 
   switchTab: function(e) {
-    this.setData({ tab: Number(e.currentTarget.dataset.index) });
+    var idx = Number(e.currentTarget.dataset.index);
+    this.setData({
+      tab: idx,
+      currentList: idx === 0 ? this.data.streakList : this.data.starsList
+    });
   }
 });
