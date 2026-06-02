@@ -6,11 +6,81 @@ Page({
     familyCode: '',
     children: [],
     codeInput: '',
-    loading: false
+    loading: false,
+    isParent: false,
+    contracts: [],
+    templates: storage.CONTRACT_TEMPLATES || [],
+    tabIndex: 0  // 0=家庭, 1=契约
   },
 
   onShow: function() {
+    this.setData({ isParent: storage.isParentMode() });
     this.loadFamilyData();
+    this.loadContracts();
+  },
+
+  switchTab: function(e) {
+    var i = Number(e.currentTarget.dataset.index);
+    this.setData({ tabIndex: i });
+  },
+
+  /** 加载契约列表 */
+  loadContracts: function() {
+    var data = storage.getAppData();
+    this.setData({ contracts: data.contracts || [] });
+  },
+
+  /** 家长创建契约 */
+  onCreateContract: function(e) {
+    var that = this;
+    var tplId = e.currentTarget.dataset.tpl;
+    wx.showModal({
+      title: '设置奖励',
+      content: '达成后将获得什么奖励？',
+      editable: true,
+      placeholderText: '如：周末多玩30分钟',
+      success: function(res) {
+        if (res.confirm) {
+          var result = storage.addContract(tplId, res.content || '自定义奖励');
+          if (result.success) {
+            wx.showToast({ title: '契约已创建', icon: 'success' });
+            that.loadContracts();
+          } else {
+            wx.showToast({ title: result.msg, icon: 'none' });
+          }
+        }
+      }
+    });
+  },
+
+  /** 孩子签署契约 */
+  onSignContract: function(e) {
+    var that = this;
+    var cid = e.currentTarget.dataset.id;
+    wx.showModal({
+      title: '签署契约',
+      content: '确定签署这份契约吗？达成条件后你将获得奖励！',
+      success: function(res) {
+        if (res.confirm) {
+          var result = storage.signContract(cid);
+          if (result.success) {
+            wx.showToast({ title: '契约已生效！📜', icon: 'success' });
+            that.loadContracts();
+          } else {
+            wx.showToast({ title: result.msg, icon: 'none' });
+          }
+        }
+      }
+    });
+  },
+
+  /** 孩子拒绝契约 */
+  onRejectContract: function(e) {
+    var that = this;
+    var cid = e.currentTarget.dataset.id;
+    var result = storage.rejectContract(cid);
+    that.loadContracts();
+    wx.showToast({ title: '已拒绝', icon: 'none' });
   },
 
   loadFamilyData: function() {

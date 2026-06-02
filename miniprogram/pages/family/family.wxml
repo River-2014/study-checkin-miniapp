@@ -1,4 +1,12 @@
 <view class="family-page">
+  <!-- TAB 切换 -->
+  <view class="tab-bar">
+    <view class="tab-item {{tabIndex === 0 ? 'tab-active' : ''}}" data-index="0" bindtap="switchTab">家庭管理</view>
+    <view class="tab-item {{tabIndex === 1 ? 'tab-active' : ''}}" data-index="1" bindtap="switchTab">亲子契约</view>
+  </view>
+
+  <!-- === TAB 0: 家庭管理 === -->
+  <block wx:if="{{tabIndex === 0}}">
   <view class="family-card">
     <view class="family-section-title">👨‍👩‍👧‍👦 我的家庭</view>
     <view class="family-code-area" wx:if="{{familyCode}}">
@@ -29,4 +37,46 @@
       加入家庭
     </button>
   </view>
+  </block>
+
+  <!-- === TAB 1: 亲子契约 === -->
+  <block wx:if="{{tabIndex === 1}}">
+    <!-- 家长模式：创建契约 -->
+    <view class="family-card" wx:if="{{isParent}}">
+      <view class="family-section-title">📜 创建新契约</view>
+      <view class="contract-tpl-list">
+        <view class="contract-tpl-item" wx:for="{{templates}}" wx:key="id" bindtap="onCreateContract" data-tpl="{{item.id}}">
+          <view class="tpl-left">
+            <text class="tpl-title">{{item.title}}</text>
+            <text class="tpl-desc">{{item.desc}}</text>
+          </view>
+          <text class="tpl-arrow">+</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 契约列表 -->
+    <view class="family-card">
+      <view class="family-section-title">📋 全部契约</view>
+      <view wx:if="{{contracts.length === 0}}" class="family-empty">暂无契约</view>
+      <view class="contract-item" wx:for="{{contracts}}" wx:key="id">
+        <view class="ct-top">
+          <text class="ct-title">{{item.title}}</text>
+          <text class="ct-status ct-{{item.status}}">
+            {{item.status === 'pending' ? '待签署' : item.status === 'active' ? '进行中' : item.status === 'completed' ? '已完成🎉' : '已拒绝'}}
+          </text>
+        </view>
+        <view class="ct-body">
+          <text class="ct-reward">🎁 {{item.reward.name}}</text>
+          <text class="ct-progress">{{item.progress.current}}/{{item.progress.target}}</text>
+        </view>
+        <view class="ct-bar"><view class="ct-bar-fill" style="width: {{item.progress.current / item.progress.target * 100}}%"></view></view>
+        <!-- 待签署：签署/拒绝按钮（学生端） -->
+        <view class="ct-actions" wx:if="{{item.status === 'pending' && !isParent}}">
+          <button size="mini" type="primary" bindtap="onSignContract" data-id="{{item.id}}">签署</button>
+          <button size="mini" type="default" bindtap="onRejectContract" data-id="{{item.id}}">拒绝</button>
+        </view>
+      </view>
+    </view>
+  </block>
 </view>

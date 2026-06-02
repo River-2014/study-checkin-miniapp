@@ -128,7 +128,8 @@ function initData() {
     userMode: 'student',          // 'student' | 'parent'
     wrongBook: [],                // [{ id, content, type, difficulty, options, answer, analysis, examPoint, subject, knowledge, addedTime }]
     aiRecords: [],                // [{ time, subject, knowledge, difficulty, type, textbook, preference, totalCount, correctCount }]
-    dailyMetrics: {}              // { "YYYY-MM-DD": { active, checkedIn } } DECR 北极星指标
+    dailyMetrics: {},             // { "YYYY-MM-DD": { active, checkedIn } } DECR 北极星指标
+    contracts: []                 // [{ id, title, condition, reward, status, progress, childSigned, createdAt }]
   };
 }
 
@@ -391,6 +392,95 @@ function trackDailyMetric(action) {
     delete data.dailyMetrics[keys.shift()];
   }
   saveAppData(data);
+}
+
+// ===== 亲子契约 =====
+
+var CONTRACT_TEMPLATES = [
+  { id: 'streak_7',  title: '连续 7 天打卡',   condition: { type: 'streak', value: 7 },  desc: '坚持每日打卡 7 天，养成好习惯' },
+  { id: 'streak_14', title: '连续 14 天打卡',  condition: { type: 'streak', value: 14 }, desc: '坚持每日打卡两周，挑战升级' },
+  { id: 'streak_30', title: '连续 30 天打卡',  condition: { type: 'streak', value: 30 }, desc: '月度打卡冠军，超级自律达人' },
+  { id: 'weekly_math', title: '本周数学打卡 5 次', condition: { type: 'subject_count', subject: '数学', value: 5 }, desc: '数学专项强化' },
+  { id: 'points_100', title: '累计获得 100⭐',   condition: { type: 'total_stars', value: 100 }, desc: '积分达人计划' }
+];
+
+/** 创建契约 */
+function addContract(templateId, rewardName) {
+  var data = getAppData();
+  var tpl = CONTRACT_TEMPLATES.find(function(t) { return t.id === templateId; });
+  if (!tpl) return { success: false, msg: '模板不存在' };
+
+  var contract = {
+    id: 'c_' + String(data.nextLogId++),
+    title: tpl.title,
+    condition: tpl.condition,
+    reward: { name: rewardName || '自定义奖励' },
+    status: 'pending',  // pending|active|completed|rejected
+    progress: { current: 0, target: tpl.condition.value },
+    childSigned: false,
+    createdBy: 'parent',
+    createdAt: new Date().toISOString().substring(0, 10)
+  };
+  data.contracts.push(contract);
+  saveAppData(data);
+  return { success: true, contract: contract };
+}
+
+/** 孩子签署契约 */
+function signContract(contractId) {
+  var data = getAppData();
+  var c = data.contracts.find(function(x) { return x.id === contractId; });
+  if (!c) return { success: false, msg: '契约不存在' };
+  if (c.childSigned) return { success: false, msg: '已签署' };
+  c.childSigned = true;
+  c.status = 'active';
+  saveAppData(data);
+  return { success: true };
+}
+
+/** 拒绝契约 */
+function rejectContract(contractId) {
+  var data = getAppData();
+  var c = data.contracts.find(function(x) { return x.id === contractId; });
+  if (!c) return { success: false, msg: '契约不存在' };
+  c.status = 'rejected';
+  saveAppData(data);
+  return { success: true };
+}
+
+/** 更新契约进度（每次打卡后调用） */
+function updateContractProgress() {
+  var data = getAppData();
+  var changed = false;
+  for (var i = 0; i < data.contracts.length; i++) {
+    var c = data.contracts[i];
+    if (c.status !== 'active') continue;
+
+    if (c.condition.type === 'streak') {
+      c.progress.current = Math.max(c.progress.current, data.user.streak);
+    } else if (c.condition.type === 'subject_count') {
+      var subj = c.condition.subject;
+      c.progress.current = data.categoryStats[subj] || 0;
+    } else if (c.condition.type === 'total_stars') {
+      c.progress.current = data.user.totalStarsEarned;
+    }
+
+    // 达标自动完成
+    if (c.progress.current >= c.progress.target) {
+      c.progress.current = Math.min(c.progress.current, c.progress.target);
+      c.status = 'completed';
+    }
+    changed = true;
+  }
+  if (changed) saveAppData(data);
+  return data.contracts;
+}
+
+/** 获取活跃契约 */
+function getActiveContracts() {
+  return getAppData().contracts.filter(function(c) {
+    return c.status === 'active' || c.status === 'pending';
+  });
 }
 
 // ===== 任务管理 =====
@@ -832,5 +922,12 @@ module.exports = {
   buyGuardianCard,
   updateFlameState,
   // DECR 埋点
-  trackDailyMetric
+  trackDailyMetric,
+  // 亲子契约
+  CONTRACT_TEMPLATES,
+  addContract,
+  signContract,
+  rejectContract,
+  updateContractProgress,
+  getActiveContracts
 };

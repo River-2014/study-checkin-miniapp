@@ -65,7 +65,8 @@ Page({
     nextTask: null,         // 第一个未完成任务
     allDone: false,          // 今日任务是否全部完成
     showAIRecommend: false,  // AI 练习推荐卡片
-    aiRecommendSubject: ''   // 推荐学科
+    aiRecommendSubject: '',  // 推荐学科
+    activeContracts: []      // 活跃亲子契约
   },
 
   _confettiTimer: null,
@@ -360,7 +361,8 @@ Page({
         isParent: storage.isParentMode(),
         dailyPlan: plan,
         nextTask: nextTask,
-        allDone: doneIds.length >= tasks.length && tasks.length > 0
+        allDone: doneIds.length >= tasks.length && tasks.length > 0,
+        activeContracts: data.contracts ? data.contracts.filter(function(c) { return c.status === 'active'; }) : []
       });
       // 准备柱状图数据
       this.prepareChartData();
@@ -508,6 +510,8 @@ Page({
     if (!wasChecked && nowChecked) {
       // DECR 埋点
       storage.trackDailyMetric('checkin');
+      // 更新契约进度
+      storage.updateContractProgress();
       // 播放动画
       this.playCelebrate();
 

@@ -37,6 +37,21 @@
     </view>
   </view>
 
+  <!-- ===== 活跃契约进度 ===== -->
+  <view class="card contract-card" wx:for="{{activeContracts}}" wx:key="id" wx:for-item="ct">
+    <view class="contract-header">
+      <text class="contract-icon">📜</text>
+      <view class="contract-info">
+        <text class="contract-title">{{ct.title}}</text>
+        <text class="contract-reward">奖励：{{ct.reward.name}}</text>
+      </view>
+      <view class="contract-progress-badge">{{ct.progress.current}}/{{ct.progress.target}}</view>
+    </view>
+    <view class="progress-bar-bg" style="height:8rpx;border-radius:4rpx;">
+      <view class="progress-bar-fill" style="width: {{ct.progress.current / ct.progress.target * 100}}%; background: linear-gradient(90deg, #6C5CE7, #A29BFE);"></view>
+    </view>
+  </view>
+
   <!-- ===== 一键开始（第一个未完成任务） ===== -->
   <view class="card next-task-card" wx:if="{{nextTask && !allDone}}" bindtap="startNextTask">
     <view class="next-task-label">下一个任务</view>
