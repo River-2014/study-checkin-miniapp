@@ -146,6 +146,23 @@
     </view>
   </view>
 
+  <!-- 学习周报 + PK入口 -->
+  <view class="card lb-entry-card" bindtap="goToWeeklyReport" hover-class="task-hover">
+    <view class="lb-entry-inner">
+      <text class="lb-entry-icon">📊</text>
+      <text class="lb-entry-text">学习周报</text>
+      <text class="lb-entry-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="card lb-entry-card" bindtap="goToPK" hover-class="task-hover">
+    <view class="lb-entry-inner">
+      <text class="lb-entry-icon">🔥</text>
+      <text class="lb-entry-text">打卡PK赛</text>
+      <text class="lb-entry-arrow">›</text>
+    </view>
+  </view>
+
   <!-- ===== AI 出题入口 ===== -->
   <view class="card ai-exam-entry" bindtap="goToAI" hover-class="task-hover">
     <view class="ai-exam-entry-inner">

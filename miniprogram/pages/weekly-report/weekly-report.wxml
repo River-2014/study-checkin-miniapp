@@ -1,0 +1,30 @@
+<view class="wr-page">
+  <view class="wr-header">
+    <text class="wr-title">📊 学习周报</text>
+    <text class="wr-date">{{weekRange}}</text>
+  </view>
+
+  <view class="wr-stats">
+    <view class="wr-stat"><text class="wr-stat-num">{{checkinDays}}/7</text><text class="wr-stat-label">打卡天数</text></view>
+    <view class="wr-stat"><text class="wr-stat-num">{{totalTasks}}</text><text class="wr-stat-label">完成任务</text></view>
+    <view class="wr-stat"><text class="wr-stat-num">{{starsEarned}}</text><text class="wr-stat-label">获得⭐</text></view>
+    <view class="wr-stat"><text class="wr-stat-num">{{aiCorrectRate}}</text><text class="wr-stat-label">AI正确率</text></view>
+  </view>
+
+  <view class="wr-highlight">{{highlight}}</view>
+
+  <view class="wr-card">
+    <view class="wr-card-title">每日打卡完成度</view>
+    <chart-bar data="{{dailyChart}}" options="{{}}"></chart-bar>
+  </view>
+
+  <view class="wr-card">
+    <view class="wr-card-title">学科分布</view>
+    <chart-bar data="{{subjectChart}}" options="{{}}"></chart-bar>
+  </view>
+
+  <view class="wr-meta">
+    <text>错题累计：{{wrongCount}} 题</text>
+    <text>连续打卡：{{streak}} 天</text>
+  </view>
+</view>

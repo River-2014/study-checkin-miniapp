@@ -22,7 +22,9 @@
     "pages/admin/reviewQueue/reviewQueue",
     "pages/admin/unauthorized/unauthorized",
     "pages/leaderboard/leaderboard",
-    "pages/pomodoro/pomodoro"
+    "pages/pomodoro/pomodoro",
+    "pages/weekly-report/weekly-report",
+    "pages/pk/pk"
   ],
   "window": {
     "navigationBarTitleText": "小升初冲刺打卡",

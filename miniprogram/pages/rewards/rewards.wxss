@@ -106,3 +106,17 @@
   color: #2D3436;
   padding: 24rpx 24rpx 16rpx;
 }
+
+/* ===== 公益捐赠 ===== */
+.charity-grid { display: flex; flex-wrap: wrap; padding: 0 16rpx; gap: 12rpx; }
+.charity-card {
+  width: calc(50% - 22rpx);
+  background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+  border-radius: 20rpx;
+  padding: 24rpx 16rpx;
+  display: flex; flex-direction: column; align-items: center; gap: 8rpx;
+}
+.charity-card:active { transform: scale(0.97); }
+.charity-icon { font-size: 48rpx; }
+.charity-name { font-size: 26rpx; font-weight: 600; color: #2E7D32; }
+.charity-cost { font-size: 24rpx; color: #4CAF50; font-weight: 500; }

@@ -205,6 +205,16 @@ Page({
     wx.navigateTo({ url: '/pages/pomodoro/pomodoro' });
   },
 
+  /** 跳转到学习周报 */
+  goToWeeklyReport() {
+    wx.navigateTo({ url: '/pages/weekly-report/weekly-report' });
+  },
+
+  /** 跳转到 PK 赛 */
+  goToPK() {
+    wx.navigateTo({ url: '/pages/pk/pk' });
+  },
+
   /** 生成分享卡片 */
   generateShareCard() {
     var share = require('../../utils/share');

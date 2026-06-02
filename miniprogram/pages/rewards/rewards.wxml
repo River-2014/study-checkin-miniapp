@@ -26,5 +26,30 @@
     </view>
   </view>
 
+  <!-- ===== 公益捐赠 ===== -->
+  <view class="section-title" style="margin-top: 20rpx;">🌍 公益捐赠</view>
+  <view class="charity-grid">
+    <view class="charity-card" bindtap="donate" data-type="tree">
+      <text class="charity-icon">🌳</text>
+      <text class="charity-name">种一棵树</text>
+      <text class="charity-cost">100 ⭐</text>
+    </view>
+    <view class="charity-card" bindtap="donate" data-type="book">
+      <text class="charity-icon">📚</text>
+      <text class="charity-name">捐一本书</text>
+      <text class="charity-cost">80 ⭐</text>
+    </view>
+    <view class="charity-card" bindtap="donate" data-type="meal">
+      <text class="charity-icon">🍱</text>
+      <text class="charity-name">爱心午餐</text>
+      <text class="charity-cost">60 ⭐</text>
+    </view>
+    <view class="charity-card" bindtap="donate" data-type="class">
+      <text class="charity-icon">🎓</text>
+      <text class="charity-name">助学课堂</text>
+      <text class="charity-cost">120 ⭐</text>
+    </view>
+  </view>
+
   <view class="safe-bottom"></view>
 </view>

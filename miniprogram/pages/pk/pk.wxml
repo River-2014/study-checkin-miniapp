@@ -1,0 +1,50 @@
+<view class="pk-page">
+  <view class="pk-header">🔥 打卡 PK 赛</view>
+
+  <!-- 我的数据 -->
+  <view class="pk-card my-card">
+    <text class="pk-card-title">我的战绩</text>
+    <view class="pk-stats">
+      <text>连续 {{myStreak}} 天</text>
+      <text>{{myStars}} ⭐</text>
+      <text>累计 {{myCheckins}} 次</text>
+    </view>
+  </view>
+
+  <!-- 挑战中 -->
+  <view class="pk-card" wx:if="{{challengeActive && opponent}}">
+    <text class="pk-card-title">⚔️ 正在进行中的挑战</text>
+    <view class="pk-vs">
+      <view class="pk-player"><text>我</text><text class="pk-score">{{myStreak}}天</text></view>
+      <text class="pk-vs-text">VS</text>
+      <view class="pk-player"><text>{{opponent.name}}</text><text class="pk-score">{{opponent.streak}}天</text></view>
+    </view>
+    <view class="pk-actions">
+      <button size="mini" type="primary" bindtap="settleChallenge">结算</button>
+      <button size="mini" type="default" bindtap="cancelChallenge">放弃</button>
+    </view>
+  </view>
+
+  <!-- 结果 -->
+  <view class="pk-card result-card" wx:if="{{challengeResult}}" style="background: {{challengeResult.won ? '#E8F5E9' : '#FFF3E0'}}">
+    <text class="pk-result-text">{{challengeResult.msg}}</text>
+    <text class="pk-result-score">我的 {{challengeResult.myScore}} : {{challengeResult.oppScore}} 对手</text>
+  </view>
+
+  <!-- 发起挑战 -->
+  <button class="pk-start-btn" bindtap="startChallenge" wx:if="{{!challengeActive && !challengeResult}}">
+    发起新挑战 🔥
+  </button>
+  <button class="pk-start-btn" bindtap="startChallenge" wx:if="{{!challengeActive && challengeResult}}">
+    再来一局 🔥
+  </button>
+
+  <!-- 历史记录 -->
+  <view class="pk-card" wx:if="{{history.length > 0}}">
+    <text class="pk-card-title">📋 挑战记录</text>
+    <view class="pk-history-item" wx:for="{{history}}" wx:key="date">
+      <text>{{item.date}} vs {{item.opponent}}</text>
+      <text class="{{item.result === 'win' ? 'pk-win' : 'pk-lose'}}">{{item.result === 'win' ? '🏆胜' : '💪败'}}</text>
+    </view>
+  </view>
+</view>

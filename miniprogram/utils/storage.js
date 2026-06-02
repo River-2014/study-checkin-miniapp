@@ -149,7 +149,8 @@ function initData() {
     aiRecords: [],                // [{ time, subject, knowledge, difficulty, type, textbook, preference, totalCount, correctCount }]
     dailyMetrics: {},             // { "YYYY-MM-DD": { active, checkedIn } } DECR 北极星指标
     contracts: [],                // [{ id, title, condition, reward, status, progress, childSigned, createdAt }]
-    pendingRedeems: []            // [{ id, rewardId, rewardName, cost, status, createdAt, approvedAt }]
+    pendingRedeems: [],           // [{ id, rewardId, rewardName, cost, status, createdAt, approvedAt }]
+    charityDonations: []          // [{ id, type, name, cost, donatedAt }] 公益捐赠记录
   };
 }
 
@@ -639,6 +640,34 @@ function rejectRedeem(redeemId) {
   return { success: true, msg: '已拒绝，积分退回' };
 }
 
+/** 公益捐赠：积分兑换公益行为 */
+function donateToCharity(donationType) {
+  var data = getAppData();
+  var types = {
+    tree:  { name: '种一棵树🌳', cost: 100, desc: '为地球添一抹绿色' },
+    book:  { name: '捐一本书📚', cost: 80,  desc: '为山区孩子点亮知识' },
+    meal:  { name: '爱心午餐🍱', cost: 60,  desc: '为留守儿童送一份温暖' },
+    class: { name: '助学一堂课🎓', cost: 120, desc: '支持一节乡村教育课' }
+  };
+  var info = types[donationType];
+  if (!info) return { success: false, msg: '不支持的捐赠类型' };
+  if (data.user.stars < info.cost) return { success: false, msg: '积分不足' };
+
+  data.user.stars -= info.cost;
+  data.charityDonations = data.charityDonations || [];
+  data.charityDonations.push({
+    id: 'd_' + String(Date.now()),
+    type: donationType,
+    name: info.name,
+    cost: info.cost,
+    donatedAt: new Date().toISOString()
+  });
+  addPointsLog(data, 'spend', info.cost, '公益捐赠：' + info.name);
+  addLog(data.logs, 'charity', '公益捐赠「' + info.name + '」' + info.desc, -info.cost);
+  saveAppData(data);
+  return { success: true, msg: '感谢你的爱心！' + info.desc };
+}
+
 function resetRewards() {
   const data = getAppData();
   data.rewards = JSON.parse(JSON.stringify(DEFAULT_REWARDS));
@@ -969,6 +998,7 @@ module.exports = {
   requestRedeem,
   approveRedeem,
   rejectRedeem,
+  donateToCharity,
   resetRewards,
   resetAllData,
   addStars,
