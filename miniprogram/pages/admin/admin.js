@@ -63,6 +63,11 @@ Page({
     }
   },
 
+  // ===== 新页面入口 =====
+  goQuestionManage: function() { wx.navigateTo({ url: '/pages/admin/questionManage/questionManage' }); },
+  goStats: function() { wx.navigateTo({ url: '/pages/admin/stats/stats' }); },
+  goReviewQueue: function() { wx.navigateTo({ url: '/pages/admin/reviewQueue/reviewQueue' }); },
+
   // ===== TAB 切换 =====
   switchTab: function(e) {
     var idx = Number(e.currentTarget.dataset.index);

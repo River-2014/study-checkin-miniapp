@@ -16,7 +16,11 @@
     "pages/badges/badges",
     "pages/practice/practice",
     "pages/exam-paper/exam-paper",
-    "pages/admin/admin"
+    "pages/admin/admin",
+    "pages/admin/questionManage/questionManage",
+    "pages/admin/stats/stats",
+    "pages/admin/reviewQueue/reviewQueue",
+    "pages/admin/unauthorized/unauthorized"
   ],
   "window": {
     "navigationBarTitleText": "小升初冲刺打卡",

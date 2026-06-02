@@ -47,11 +47,16 @@ jobs:
       - name: 语法检查（核心脚本）
         run: |
           set -e
-          node -c crawler.js      && echo "✓ crawler.js"
+          node -c crawler.js         && echo "✓ crawler.js"
           node -c import_to_cloud.js && echo "✓ import_to_cloud.js"
           node -c output_cloud.js    && echo "✓ output_cloud.js"
           node -c seedData.js        && echo "✓ seedData.js"
           node -c simulate_import.js && echo "✓ simulate_import.js"
+          node -c run_shijuan1.js    && echo "✓ run_shijuan1.js"
+          node -c run_appsj.js       && echo "✓ run_appsj.js"
+          node -c parsers/appsj.js   && echo "✓ parsers/appsj.js"
+          node -c parsers/shijuan1.js && echo "✓ parsers/shijuan1.js"
+          node -c parsers/questionParser.js && echo "✓ parsers/questionParser.js"
 
       - name: 依赖安全审计
         run: npm audit --audit-level=high --production

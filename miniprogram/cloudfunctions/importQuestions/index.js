@@ -1,15 +1,15 @@
 /**
- * importQuestions 云函数 v3.0 — 3秒友好版
+ * importQuestions 云函数 v4.0 — 性能优化版
  *
- * 策略：不做任何费时操作，只接受小批量 data 数组，3 秒内完成。
- * 客户端用 importHelper 自动分片调用。
+ * 策略：接受小批量 data 数组，客户端用 importHelper 自动分片调用。
+ * v4 改进: 批大小 10→15, 内存 256→512MB, 细粒度计时, contentHash 预埋
  *
  * ===== 入参 =====
- *   { data: [...] }   题目数组，建议每批 20-30 条（客户端自动分片）
+ *   { data: [...] }   题目数组，建议每批 50 条（客户端自动分片）
  *   { dryRun: true }  仅统计不写入
  *
  * ===== 返回 =====
- *   { success, total, inserted, updated, skipped, errors[], elapsedMs }
+ *   { success, total, inserted, updated, skipped, errors[], timing }
  */
 var cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
@@ -18,7 +18,7 @@ var _ = db.command;
 var crypto = require('crypto');
 
 var COLLECTION = 'exam_questions';
-var BATCH = 10; // 每批并行 DB 操作数
+var BATCH = 15; // 每批并行 DB 操作数（512MB 内存下可安全提升）
 
 // ====== 工具 ======
 
@@ -67,6 +67,14 @@ function normalize(raw) {
   var shortStem = stem.replace(/[\s\n\r\t]+/g, '').substring(0, 80);
   var questionId = raw.questionId || md5(shortStem + '|' + subject + '|' + grade);
 
+  // contentHash: stem + options + answer + explanation 的联合哈希（用于版本控制）
+  var contentHash = md5(
+    stem.substring(0, 100) + '|' +
+    (raw.options || []).join(',') + '|' +
+    (raw.answer || '') + '|' +
+    (raw.explanation || '')
+  );
+
   return {
     questionId: questionId,
     subject: subject,
@@ -82,39 +90,57 @@ function normalize(raw) {
     paperSource: String(raw.paperSource || '').substring(0, 100),
     status: 'active',
     usageCount: 0,
-    correctCount: 0
+    correctCount: 0,
+    contentHash: contentHash,
+    versionNumber: 1,
+    isLatest: true,
+    familyId: raw.familyId || questionId
   };
 }
 
-// ====== 核心：小批量极速 upsert ======
+// ====== 核心：小批量极速 upsert（含 contentHash 比对） ======
 
 async function fastUpsert(questions, dryRun) {
-  if (questions.length === 0) return { inserted: 0, updated: 0, skipped: 0, errors: [] };
-  if (dryRun) return { inserted: questions.length, updated: 0, skipped: 0, errors: [] };
+  if (questions.length === 0) return { inserted: 0, updated: 0, skipped: 0, errors: [], queryMs: 0, writeMs: 0 };
+  if (dryRun) return { inserted: questions.length, updated: 0, skipped: 0, errors: [], queryMs: 0, writeMs: 0 };
 
   var coll = db.collection(COLLECTION);
   var ids = questions.map(function(q) { return q.questionId; });
+  var queryStart = Date.now();
 
-  // Step 1: 一次批量查询所有已存在的 questionId（_.in 最多 100 个）
-  var existingIds = {};
+  // Step 1: 批量查询已存在的 questionId（同时获取 contentHash 用于版本比对）
+  var existingDocs = {};
   for (var i = 0; i < ids.length; i += 80) {
     var chunk = ids.slice(i, i + 80);
-    var res = await coll.where({ questionId: _.in(chunk) }).field({ questionId: true, _id: true }).limit(80).get();
+    var res = await coll.where({ questionId: _.in(chunk) })
+      .field({ questionId: true, _id: true, contentHash: true, versionNumber: true, familyId: true })
+      .limit(80)
+      .get();
     if (res.data) {
-      res.data.forEach(function(doc) { existingIds[doc.questionId] = doc._id; });
+      res.data.forEach(function(doc) { existingDocs[doc.questionId] = doc; });
     }
   }
 
-  // Step 2: 分成新增和更新两组
+  var queryMs = Date.now() - queryStart;
+
+  // Step 2: 分成新增、更新（contentHash相同）、版本升级（contentHash不同）三组
   var inserts = [];
-  var updates = [];
+  var updates = [];    // contentHash 相同 → 轻量更新
+  var versions = [];   // contentHash 不同 → 版本升级
   for (var j = 0; j < questions.length; j++) {
     var q = questions[j];
-    var docId = existingIds[q.questionId];
-    if (docId) {
-      updates.push({ _id: docId, data: q });
-    } else {
+    var existing = existingDocs[q.questionId];
+    if (!existing) {
       inserts.push(q);
+    } else if (existing.contentHash === q.contentHash) {
+      // 内容未变，仅更新元数据（不改变版本）
+      updates.push({ _id: existing._id, data: q });
+    } else {
+      // 内容变化，创建新版本
+      versions.push({
+        oldDoc: existing,
+        newData: q
+      });
     }
   }
 
@@ -122,6 +148,7 @@ async function fastUpsert(questions, dryRun) {
   var updated = 0;
   var skipped = 0;
   var errors = [];
+  var writeStart = Date.now();
 
   // Step 3: 并行新增
   for (var k = 0; k < inserts.length; k += BATCH) {
@@ -135,7 +162,7 @@ async function fastUpsert(questions, dryRun) {
     await Promise.all(tasks);
   }
 
-  // Step 4: 并行更新
+  // Step 4: 并行更新（contentHash 相同，只更新非敏感字段）
   for (var u = 0; u < updates.length; u += BATCH) {
     var uBatch = updates.slice(u, u + BATCH);
     var uTasks = uBatch.map(function(item) {
@@ -157,7 +184,35 @@ async function fastUpsert(questions, dryRun) {
     await Promise.all(uTasks);
   }
 
-  return { inserted: inserted, updated: updated, skipped: skipped, errors: errors };
+  // Step 5: 版本升级（contentHash 变化 → isLatest 切旧 + 插新）
+  for (var v = 0; v < versions.length; v += BATCH) {
+    var vBatch = versions.slice(v, v + BATCH);
+    var vTasks = vBatch.map(function(ver) {
+      var newDoc = ver.newData;
+      newDoc.versionNumber = (ver.oldDoc.versionNumber || 1) + 1;
+      newDoc.isLatest = true;
+      newDoc.familyId = ver.oldDoc.familyId || ver.oldDoc.questionId;
+      newDoc._id = undefined; // 让系统生成新 _id
+
+      // 先插新版本，再置旧版本 isLatest=false
+      return coll.add({ data: newDoc }).then(function() {
+        inserted++;
+        return coll.doc(ver.oldDoc._id).update({ data: { isLatest: false } });
+      }).catch(function(e) {
+        errors.push({ stem: newDoc.stem.substring(0, 30), error: 'version: ' + (e.message || '').substring(0, 60) });
+        skipped++;
+      });
+    });
+    await Promise.all(vTasks);
+  }
+
+  var writeMs = Date.now() - writeStart;
+
+  return {
+    inserted: inserted, updated: updated, skipped: skipped,
+    errors: errors,
+    queryMs: queryMs, writeMs: writeMs
+  };
 }
 
 // ====== 主入口 ======
@@ -220,6 +275,11 @@ exports.main = async function(event) {
     skipped: result.skipped,
     stats: stats,
     errors: result.errors.slice(0, 10),
-    elapsedMs: Date.now() - start
+    elapsedMs: Date.now() - start,
+    timing: {
+      total: Date.now() - start,
+      query: result.queryMs || 0,
+      write: result.writeMs || 0
+    }
   };
 };

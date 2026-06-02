@@ -5,10 +5,16 @@
   "main": "crawler.js",
   "scripts": {
     "start": "node crawler.js",
-    "math": "node crawler.js --subject=数学",
-    "chinese": "node crawler.js --subject=语文",
-    "english": "node crawler.js --subject=英语",
-    "all": "node crawler.js --subject=all"
+    "appsj": "node run_appsj.js",
+    "appsj:math": "node run_appsj.js 数学",
+    "appsj:chinese": "node run_appsj.js 语文",
+    "appsj:english": "node run_appsj.js 英语",
+    "shijuan1": "node run_shijuan1.js",
+    "shijuan1:math": "node run_shijuan1.js 数学 六年级 10",
+    "math": "node crawler.js --source=all --subject=数学",
+    "chinese": "node crawler.js --source=all --subject=语文",
+    "english": "node crawler.js --source=all --subject=英语",
+    "all": "node crawler.js --source=all --subject=all --grade=all"
   },
   "dependencies": {
     "axios": "^1.16.1",

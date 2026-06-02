@@ -1,5 +1,12 @@
 <view class="admin-page">
 
+  <!-- 高级功能入口 -->
+  <view class="nav-row">
+    <button class="nav-btn" bindtap="goQuestionManage">题库管理（新）</button>
+    <button class="nav-btn" bindtap="goStats">统计分析</button>
+    <button class="nav-btn" bindtap="goReviewQueue">审核队列</button>
+  </view>
+
   <!-- TAB 切换 -->
   <view class="tab-bar">
     <view class="tab-item {{tabIndex === 0 ? 'tab-active' : ''}}" data-index="0" bindtap="switchTab">

@@ -19,7 +19,7 @@
  *   });
  */
 
-var CHUNK_SIZE = 20;     // 每片 20 条，保证 3 秒内完成
+var CHUNK_SIZE = 50;     // 每片 50 条（云函数内存升至 512MB）
 var DELAY_MS = 300;      // 片间延迟
 
 function sleep(ms) {

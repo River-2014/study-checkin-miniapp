@@ -1,0 +1,81 @@
+# ============================================================
+# 每日题库质量报告
+# UTC 00:00 = 北京时间 08:00，每天自动运行
+# 也可在 GitHub Actions 页面手动触发
+# ============================================================
+name: 每日质量报告
+
+on:
+  schedule:
+    - cron: '7 0 * * *'  # UTC 00:07，避峰
+  workflow_dispatch:      # 手动触发
+
+permissions:
+  contents: read
+
+jobs:
+  quality-report:
+    name: 生成并推送质量报告
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 调用 checkQuality 云函数
+        id: report
+        env:
+          WECHAT_WEBHOOK: ${{ secrets.WECHAT_WEBHOOK }}
+        run: |
+          echo "调用云函数生成质量报告..."
+
+          REPORT=$(curl -s -X POST "${{ secrets.CHECK_QUALITY_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{}' 2>&1 || echo '{"success":false,"error":"调用失败"}')
+
+          echo "报告生成结果: ${REPORT:0:200}"
+
+          # 提取 markdown 字段
+          MARKDOWN=$(echo "$REPORT" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    md = data.get('markdown', '')
+    print(md)
+except:
+    print('报告生成失败')
+" 2>&1)
+
+          # 保存 markdown 供下一步使用
+          echo "$MARKDOWN" > /tmp/report.md
+          echo "markdown_len=$(wc -c < /tmp/report.md)" >> $GITHUB_OUTPUT
+
+      - name: 推送到企业微信
+        if: env.WECHAT_WEBHOOK != ''
+        env:
+          WECHAT_WEBHOOK: ${{ secrets.WECHAT_WEBHOOK }}
+        run: |
+          if [ ! -f /tmp/report.md ]; then
+            echo "报告文件不存在，跳过推送"
+            exit 0
+          fi
+
+          CONTENT=$(cat /tmp/report.md | python3 -c "
+import sys, json
+content = sys.stdin.read()
+# 截断到 4000 字符（企业微信 Markdown 限制）
+content = content[:4000]
+print(json.dumps(content))
+")
+
+          curl -X POST "$WECHAT_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"msgtype\":\"markdown\",\"markdown\":{\"content\":$CONTENT}}"
+
+          echo "已推送到企业微信"
+
+      - name: 推送失败降级
+        if: failure()
+        run: |
+          echo "质量报告生成或推送失败"
+          echo "检查:"
+          echo "  1. CHECK_QUALITY_URL secret 是否已配置（云函数 HTTP 触发器地址）"
+          echo "  2. WECHAT_WEBHOOK secret 是否已配置（企业微信机器人 webhook）"
+          echo "  3. 云函数 checkQuality 是否已部署"

@@ -5,6 +5,21 @@
   min-height: 100vh;
 }
 
+/* ===== 新功能入口导航 ===== */
+.nav-row {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+.nav-btn {
+  flex: 1;
+  font-size: 26rpx;
+  background: #FF9F43;
+  color: #fff;
+  border-radius: 12rpx;
+  padding: 12rpx 0;
+}
+
 /* ===== TAB 切换 ===== */
 .tab-bar {
   display: flex;

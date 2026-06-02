@@ -188,14 +188,31 @@ function parseQuestions(text, meta) {
     var options = [];
     var answer = '';
 
-    // 收集选项（A．/ B．/ C．/ D． 开头）
+    // 收集选项（A．/ B．/ C．/ D． 开头，支持同行多选项）
+    // 如 "A．50－22＋27  B．50－（22＋27）  C．22＋27"
     var nextIdx = i + 1;
     while (nextIdx < lines.length) {
       var nextLine = lines[nextIdx].trim();
       var optMatch = nextLine.match(/^([A-D])[\.\、．\)）]\s*(.+)/);
       if (optMatch) {
-        options.push(optMatch[2].trim());
+        var remainText = optMatch[2];
         nextIdx++;
+
+        // 拆分行内多选项（按 2+个空格后跟 [A-D]． 分割）
+        var inlineParts = remainText.split(/\s{2,}(?=[A-D][\.\、．\)）])/);
+        // 第一个部分可能有前缀标识需要去除
+        if (inlineParts.length > 1) {
+          // 同行多选项：第一个部分是纯文本，后续是 "B．xxx" 格式
+          options.push(inlineParts[0].trim());
+          for (var ip = 1; ip < inlineParts.length; ip++) {
+            var ipMatch = inlineParts[ip].match(/^[A-D][\.\、．\)）]\s*(.+)/);
+            if (ipMatch) options.push(ipMatch[1].trim());
+          }
+          break; // 同行多选项已收齐，不再扫后续行
+        } else {
+          // 单选项，继续检查下一行
+          options.push(remainText.trim());
+        }
       } else {
         break;
       }

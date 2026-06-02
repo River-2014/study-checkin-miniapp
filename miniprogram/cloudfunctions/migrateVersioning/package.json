@@ -1,0 +1,8 @@
+{
+  "name": "migrateVersioning",
+  "version": "1.0.0",
+  "description": "一次性版本字段迁移云函数。部署后手动触发，完成后可删除。",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

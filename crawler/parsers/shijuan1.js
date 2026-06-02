@@ -27,7 +27,20 @@ var fs = require('fs');
 var path = require('path');
 var crypto = require('crypto');
 
-var UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
+var UA_LIST = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0'
+];
+
+function randomUA() {
+  return UA_LIST[Math.floor(Math.random() * UA_LIST.length)];
+}
+
+function rand(min, max) {
+  return min + Math.random() * (max - min);
+}
 var BASE = 'https://www.shijuan1.com';
 
 // 学科+年级 → URL 路径
@@ -57,23 +70,24 @@ function ensureDir(dir) {
  * GBK 编码页面请求（带重试）
  */
 async function fetchGBK(url, retries) {
-  retries = retries || 3;
+  retries = retries || 5;
   var lastErr = null;
 
   for (var i = 0; i < retries; i++) {
     try {
       var res = await axios.get(url, {
-        timeout: 15000,
-        headers: { 'User-Agent': UA, 'Referer': BASE + '/' },
+        timeout: 20000,
+        headers: { 'User-Agent': randomUA(), 'Referer': BASE + '/' },
         responseType: 'arraybuffer',
-        maxRedirects: 5
+        maxRedirects: 5,
+        validateStatus: function(s) { return s < 400; }
       });
       var html = iconv.decode(Buffer.from(res.data), 'gbk');
       return { html: html, $: cheerio.load(html), status: res.status };
     } catch(e) {
       lastErr = e;
       if (i < retries - 1) {
-        await sleep(1000 * Math.pow(2, i)); // 指数退避
+        await sleep(1000 * Math.pow(2, i) + rand(0, 800));
       }
     }
   }
@@ -157,20 +171,22 @@ async function crawlGradeList(subjectKey, grade, maxPages) {
   var catId = 0;
   var baseUrl = '';
 
-  // 第1页
+  // 第1页（获取 catId、总页数）
   var first = await crawlListPage(subjectKey, grade, 1);
   allPapers = allPapers.concat(first.papers);
   catId = first.catId;
   baseUrl = first.baseUrl;
 
-  // 后续页（需要 catId）
+  // 后续页（自适应终止：连续空页即停止）
   if (catId > 0 && first.totalPages > 1) {
     var pages = Math.min(first.totalPages, maxPages);
+    var emptyCount = 0;
     for (var p = 2; p <= pages; p++) {
       try {
         var url = baseUrl + 'list_' + catId + '_' + p + '.html';
         var result = await fetchGBK(url);
         var $ = result.$;
+        var pagePapers = 0;
         $('table tr').each(function() {
           var titleEl = $(this).find('a.title');
           if (titleEl.length === 0) return;
@@ -191,11 +207,21 @@ async function crawlGradeList(subjectKey, grade, maxPages) {
             subject: subjectKey,
             grade: grade + '年级'
           });
+          pagePapers++;
         });
+
+        if (pagePapers === 0) {
+          emptyCount++;
+          if (emptyCount >= 2) break; // 连续2页为空，自适应终止
+        } else {
+          emptyCount = 0;
+        }
       } catch(e) {
-        // 后续页出错不中断整个流程
+        // 某页出错不中断，但累计空页
+        emptyCount++;
+        if (emptyCount >= 2) break;
       }
-      await sleep(800 + Math.random() * 1200); // 请求间隔
+      await sleep(rand(500, 2000));
     }
   }
 
@@ -272,9 +298,10 @@ async function downloadRar(url, cacheDir) {
 
   var res = await axios.get(url, {
     timeout: 120000,
-    headers: { 'User-Agent': UA, 'Referer': BASE + '/' },
+    headers: { 'User-Agent': randomUA(), 'Referer': BASE + '/' },
     responseType: 'arraybuffer',
-    maxRedirects: 5
+    maxRedirects: 5,
+    validateStatus: function(s) { return s < 400; }
   });
 
   fs.writeFileSync(rarPath, Buffer.from(res.data));
@@ -486,7 +513,7 @@ async function crawlAndExtractPaper(paperMeta, cacheDir, extractDir) {
 
     // Stage 2: 下载 RAR
     result.stage = 'download';
-    await sleep(500 + Math.random() * 1000);
+    await sleep(rand(500, 2000));
     var dlResult = await downloadRar(detail.downloadUrl, cacheDir);
 
     // Stage 3: 解压 + 提取文本

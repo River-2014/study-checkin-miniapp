@@ -1,22 +1,22 @@
 /**
- * 小升初打卡小程序 —— 题库生成器 v3.0
+ * 小升初打卡小程序 —— 题库生成器 v4.0
  *
  * ===== 数据来源 =====
- *   1. shijuan1.com — 完整管道：列表→详情→RAR下载→DOCX提取→题目解析
- *   2. tiku.cn — 试卷列表元数据
+ *   1. appsj.szxuexiao.com — 小学试卷网：网页正文直接含试卷全文，无需下载
+ *   2. shijuan1.com — 第一试卷网：完整管道 列表→详情→RAR下载→DOCX提取→题目解析
  *   3. 内置种子题库 — 54 道覆盖 1-6 年级语数英
  *   4. 自定义 URL — 通用 HTML 页面爬取
  *
  * ===== 用法 =====
+ *   node crawler.js --source=appsj --subject=数学 --grade=六年级 --maxPapers=10
  *   node crawler.js --source=shijuan1 --subject=数学 --grade=六年级 --depth=full
- *   node crawler.js --source=shijuan1 --subject=all --grade=all --maxPapers=20
+ *   node crawler.js --source=all --subject=all --grade=all --maxPapers=20
  *   node crawler.js --source=seed
- *   node crawler.js --source=all
  *   node crawler.js --schedule
  *
  * ===== 模式说明 =====
  *   depth=meta    仅爬取试卷列表元数据（快速，不含题目内容）
- *   depth=full    完整管道：下载RAR→解压→提取DOCX文本→解析题目（慢，有完整题目）
+ *   depth=full    完整管道（appsj: 直接文本提取; shijuan1: RAR→DOCX→解析）
  */
 
 var fs = require('fs');
@@ -71,36 +71,92 @@ function buildSeedQuestions(subject, grade) {
   return list;
 }
 
-// ====== tiku.cn 爬取 ======
+// ====== appsj 爬取 ======
 
-async function crawlTiku(subject, grade) {
+/**
+ * appsj 完整管道：列表页 → 详情页 → 正文提取 → 题目解析
+ */
+async function crawlAppsjFull(subject, grade, maxPapers) {
+  try {
+    var appsj = require('./parsers/appsj');
+    var gradePY = '';
+    var gradeMap = { '一年级': 'yinianji', '二年级': 'ernianji', '三年级': 'sannianji',
+      '四年级': 'sinianji', '五年级': 'wunianji', '六年级': 'liunianji' };
+    gradePY = gradeMap[grade];
+
+    if (!gradePY) throw new Error('无法解析年级: ' + grade);
+
+    // 构建学科+年级组合路径
+    var combinedPath = '/' + gradePY;
+    if (subject === '数学') combinedPath += '_s';
+    else if (subject === '英语') combinedPath += '_y';
+
+    console.log('  appsj full: ' + subject + ' ' + grade + ' 路径: ' + combinedPath);
+
+    var result = await appsj.crawlCategoryFull(combinedPath, {
+      maxPages: Math.ceil(maxPapers / 15),
+      maxPapers: maxPapers,
+      defaultSubject: subject,
+      defaultGrade: grade,
+      onProgress: function(info) {
+        if (info.stage === 'done') {
+          console.log('    [' + info.current + '/' + info.total + '] + ' +
+            (info.paperTitle || '').substring(0, 35) + ' → ' + (info.questionCount || 0) + ' 题');
+        } else if (info.stage === 'error') {
+          console.log('    [' + info.current + '/' + info.total + '] x ' +
+            (info.paperTitle || '').substring(0, 35) + ' | ' + (info.error || '').substring(0, 50));
+        }
+      }
+    });
+
+    console.log('  appsj full 完成: ' + result.successCount + '/' + result.totalPapers +
+      ' 份成功, ' + result.questions.length + ' 道题');
+
+    return result.questions;
+  } catch(e) {
+    console.log('  appsj full 错误: ' + (e.message || '').substring(0, 120));
+    return [];
+  }
+}
+
+/**
+ * appsj 元数据模式：仅爬列表
+ */
+async function crawlAppsjMeta(subject, grade) {
   var results = [];
   try {
-    var tiku = require('./parsers/tiku');
-    var tikuSubject = '小学' + subject;
-    var papers = await tiku.crawlSubject(tikuSubject, 3);
-    console.log('  tiku.cn: 获取 ' + papers.length + ' 份试卷');
+    var appsj = require('./parsers/appsj');
+    var gradeMap = { '一年级': 'yinianji', '二年级': 'ernianji', '三年级': 'sannianji',
+      '四年级': 'sinianji', '五年级': 'wunianji', '六年级': 'liunianji' };
+    var gradePY = gradeMap[grade];
+    if (!gradePY) throw new Error('无法解析年级: ' + grade);
+
+    var combinedPath = '/' + gradePY;
+    if (subject === '数学') combinedPath += '_s';
+    else if (subject === '英语') combinedPath += '_y';
+
+    var papers = await appsj.crawlList(combinedPath, 2);
+    console.log('  appsj meta: ' + subject + ' ' + grade + ' → ' + papers.length + ' 条');
 
     for (var i = 0; i < papers.length; i++) {
       var p = papers[i];
-      var kp = p.title.replace(/^\d+[\._\-\s]*/, '').replace(/[_\-\d]+$/, '').trim();
-      if (!kp || kp.length < 2) continue;
-
+      var info = appsj.parsePaperTitle(p.title);
       results.push({
-        subject: subject, grade: grade,
+        subject: info.subject || subject,
+        grade: info.grade || grade,
         type: '填空题',
         difficulty: '基础巩固',
-        knowledgePoints: [kp],
+        knowledgePoints: [info.version || '', info.term || ''].filter(Boolean),
         stem: p.title,
         options: [], answer: '', explanation: '',
-        examPoint: kp,
-        paperSource: 'tiku.cn?id=' + p.id,
+        examPoint: '',
+        paperSource: 'appsj:' + p.id,
         status: 'active',
         createdAt: new Date().toISOString()
       });
     }
   } catch(e) {
-    console.log('  tiku.cn 错误: ' + (e.message || '').substring(0, 80));
+    console.log('  appsj meta 错误: ' + (e.message || '').substring(0, 80));
   }
   return results;
 }
@@ -329,7 +385,7 @@ async function main() {
   var args = parseArgs();
   var subject = args.subject || '数学';
   var grade = args.grade || '六年级';
-  var source = args.source || 'shijuan1';
+  var source = args.source || args.site || 'shijuan1';
   var depth = args.depth || 'full';
   var maxPapers = parseInt(args.maxPapers) || 10;
   var mode = args.mode || 'questions';
@@ -370,6 +426,17 @@ async function main() {
 
       console.log('--- ' + subj + ' ' + grad + ' ---');
 
+      // appsj 完整管道
+      if (source === 'all' || source === 'appsj') {
+        if (depth === 'full') {
+          var appsjQuestions = await crawlAppsjFull(subj, grad, maxPapers);
+          allResults = allResults.concat(appsjQuestions);
+        } else {
+          var appsjMetaResults = await crawlAppsjMeta(subj, grad);
+          allResults = allResults.concat(appsjMetaResults);
+        }
+      }
+
       // shijuan1 完整管道
       if (source === 'all' || source === 'shijuan1') {
         if (depth === 'full') {
@@ -379,12 +446,6 @@ async function main() {
           var metaResults = await crawlShijuan1Meta(subj, grad);
           allResults = allResults.concat(metaResults);
         }
-      }
-
-      // tiku.cn
-      if (source === 'all' || source === 'tiku') {
-        var tikuData = await crawlTiku(subj, grad);
-        allResults = allResults.concat(tikuData);
       }
 
       // 种子数据
