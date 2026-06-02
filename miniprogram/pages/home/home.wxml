@@ -128,6 +128,24 @@
     </view>
   </view>
 
+  <!-- ===== 排行榜入口 ===== -->
+  <view class="card lb-entry-card" bindtap="goToLeaderboard" hover-class="task-hover">
+    <view class="lb-entry-inner">
+      <text class="lb-entry-icon">🏆</text>
+      <text class="lb-entry-text">排行榜</text>
+      <text class="lb-entry-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 番茄钟入口 ===== -->
+  <view class="card lb-entry-card" bindtap="goToPomodoro" hover-class="task-hover">
+    <view class="lb-entry-inner">
+      <text class="lb-entry-icon">🍅</text>
+      <text class="lb-entry-text">番茄钟</text>
+      <text class="lb-entry-arrow">›</text>
+    </view>
+  </view>
+
   <!-- ===== AI 出题入口 ===== -->
   <view class="card ai-exam-entry" bindtap="goToAI" hover-class="task-hover">
     <view class="ai-exam-entry-inner">
@@ -228,6 +246,17 @@
 
   <!-- ===== 底部安全区 ===== -->
   <view class="safe-bottom"></view>
+
+  <!-- ===== 分享卡片浮层 ===== -->
+  <view class="ai-recommend-overlay" wx:if="{{showShareCard}}" catchtap="closeShareCard">
+    <view class="share-card-popup" catchtap="">
+      <image class="share-card-img" src="{{shareImagePath}}" mode="widthFix"></image>
+      <view class="share-card-actions">
+        <button class="share-btn" open-type="share">发送给朋友</button>
+        <view class="share-btn close" bindtap="closeShareCard">关闭</view>
+      </view>
+    </view>
+  </view>
 
   <!-- ===== AI 练习推荐浮层 ===== -->
   <view class="ai-recommend-overlay" wx:if="{{showAIRecommend}}" catchtap="closeAIRecommend">

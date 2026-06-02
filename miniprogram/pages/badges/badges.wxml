@@ -13,6 +13,7 @@
   <!-- 徽章网格 -->
   <view class="badge-grid">
     <view wx:for="{{badges}}" wx:key="key" class="badge-card {{item.earned ? 'badge-earned' : 'badge-locked'}}">
+      <view class="badge-tier">{{item.tier}}</view>
       <view class="badge-icon-wrap">
         <text class="badge-icon">{{item.earned ? item.emoji : '🔒'}}</text>
       </view>

@@ -20,7 +20,9 @@
     "pages/admin/questionManage/questionManage",
     "pages/admin/stats/stats",
     "pages/admin/reviewQueue/reviewQueue",
-    "pages/admin/unauthorized/unauthorized"
+    "pages/admin/unauthorized/unauthorized",
+    "pages/leaderboard/leaderboard",
+    "pages/pomodoro/pomodoro"
   ],
   "window": {
     "navigationBarTitleText": "小升初冲刺打卡",

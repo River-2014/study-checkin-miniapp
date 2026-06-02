@@ -47,17 +47,32 @@ const DEFAULT_REWARDS = [
 ];
 
 const BADGE_DEFS = [
-  { key: 'streak_3',     name: '连续3天',   desc: '连续打卡≥3天',      check: d => d.user.streak >= 3 },
-  { key: 'streak_7',     name: '一周坚持',   desc: '连续打卡≥7天',      check: d => d.user.streak >= 7 },
-  { key: 'streak_14',    name: '两周达人',   desc: '连续打卡≥14天',     check: d => d.user.streak >= 14 },
-  { key: 'streak_30',    name: '月度冠军',   desc: '连续打卡≥30天',     check: d => d.user.streak >= 30 },
-  { key: 'total_50',     name: '50次打卡',   desc: '累计打卡次数≥50',    check: d => d.user.totalCheckins >= 50 },
-  { key: 'total_100',    name: '100次打卡',  desc: '累计打卡次数≥100',   check: d => d.user.totalCheckins >= 100 },
-  { key: 'stars_100',    name: '百星富翁',   desc: '累计获得星星≥100',  check: d => d.user.totalStarsEarned >= 100 },
-  { key: 'stars_500',    name: '五星上将',   desc: '累计获得星星≥500',  check: d => d.user.totalStarsEarned >= 500 },
-  { key: 'master_math',    name: '数学小达人', desc: '数学任务完成≥30次',  check: d => (d.categoryStats['数学'] || 0) >= 30 },
-  { key: 'master_chinese', name: '语文小学霸', desc: '语文任务完成≥30次',  check: d => (d.categoryStats['语文'] || 0) >= 30 },
-  { key: 'master_english', name: '英语小能手', desc: '英语任务完成≥30次',  check: d => (d.categoryStats['英语'] || 0) >= 30 }
+  // 连续打卡（4级：铜→银→金→钻）
+  { key: 'streak_3',   name: '连续3天',   level: 1, tier: '🥉', desc: '连续打卡≥3天',     check: d => d.user.streak >= 3 },
+  { key: 'streak_7',   name: '一周坚持',   level: 1, tier: '🥉', desc: '连续打卡≥7天',     check: d => d.user.streak >= 7 },
+  { key: 'streak_30',  name: '月度冠军',   level: 1, tier: '🥈', desc: '连续打卡≥30天',    check: d => d.user.streak >= 30 },
+  { key: 'streak_60',  name: '双月霸主',   level: 2, tier: '🥈', desc: '连续打卡≥60天',    check: d => d.user.streak >= 60 },
+  { key: 'streak_100', name: '百天传奇',   level: 2, tier: '🥇', desc: '连续打卡≥100天',   check: d => d.user.streak >= 100 },
+  { key: 'streak_180', name: '半年坚持',   level: 3, tier: '🥇', desc: '连续打卡≥180天',   check: d => d.user.streak >= 180 },
+  { key: 'streak_365', name: '年度王者',   level: 4, tier: '💎', desc: '连续打卡≥365天',   check: d => d.user.streak >= 365 },
+  // 累计打卡
+  { key: 'total_50',   name: '50次打卡',   level: 1, tier: '🥉', desc: '累计打卡≥50次',    check: d => d.user.totalCheckins >= 50 },
+  { key: 'total_100',  name: '100次打卡',  level: 2, tier: '🥈', desc: '累计打卡≥100次',   check: d => d.user.totalCheckins >= 100 },
+  { key: 'total_200',  name: '200次打卡',  level: 3, tier: '🥇', desc: '累计打卡≥200次',   check: d => d.user.totalCheckins >= 200 },
+  { key: 'total_500',  name: '500次打卡',  level: 4, tier: '💎', desc: '累计打卡≥500次',   check: d => d.user.totalCheckins >= 500 },
+  // 星星积分
+  { key: 'stars_100',  name: '百星富翁',   level: 1, tier: '🥉', desc: '累计获得≥100⭐',  check: d => d.user.totalStarsEarned >= 100 },
+  { key: 'stars_500',  name: '五星上将',   level: 2, tier: '🥈', desc: '累计获得≥500⭐',  check: d => d.user.totalStarsEarned >= 500 },
+  { key: 'stars_1000', name: '千星传奇',   level: 3, tier: '🥇', desc: '累计获得≥1000⭐', check: d => d.user.totalStarsEarned >= 1000 },
+  { key: 'stars_5000', name: '财富自由',   level: 4, tier: '💎', desc: '累计获得≥5000⭐', check: d => d.user.totalStarsEarned >= 5000 },
+  // 学科达人
+  { key: 'master_math',    name: '数学小达人', level: 1, tier: '🥉', desc: '数学≥30次', check: d => (d.categoryStats['数学']||0) >= 30 },
+  { key: 'master_math_60', name: '数学小天才', level: 2, tier: '🥈', desc: '数学≥60次', check: d => (d.categoryStats['数学']||0) >= 60 },
+  { key: 'master_chinese', name: '语文小学霸', level: 1, tier: '🥉', desc: '语文≥30次', check: d => (d.categoryStats['语文']||0) >= 30 },
+  { key: 'master_english', name: '英语小能手', level: 1, tier: '🥉', desc: '英语≥30次', check: d => (d.categoryStats['英语']||0) >= 30 },
+  // 隐藏徽章
+  { key: 'hidden_dawn',    name: '黎明之光',   level: 3, tier: '🥇', desc: '凌晨5点前打卡',   check: d => { var h = new Date().getHours(); return h >= 0 && h < 5; } },
+  { key: 'hidden_speed',   name: '闪电侠',     level: 2, tier: '🥈', desc: '连续完成所有任务≤30分钟', check: d => d.user.streak >= 1 }
 ];
 
 // ===== 云缓存层 =====
@@ -112,7 +127,11 @@ function initData() {
       flameStreak: 0,               // 火焰显示用的连续天数
       guardianCards: 2,             // 每月免费守护卡
       guardianCardsMax: 5,          // 每月上限
-      lastGuardianReset: ''         // 上次重置月份 YYYY-MM
+      lastGuardianReset: '',        // 上次重置月份 YYYY-MM
+      leaderboardOptIn: false,      // 是否加入排行榜
+      pomodoroCount: 0,              // 累计番茄数
+      pomodoroMinutes: 0,            // 累计专注分钟
+      pomodoroToday: 0               // 今日番茄数
     },
     nextTaskId: 100,
     nextRewardId: 100,
@@ -358,6 +377,34 @@ function buyGuardianCard(data, cost) {
   return { success: true, remaining: data.user.guardianCards };
 }
 
+/** 积分衰减检查：连续7天未使用积分，每日衰减2% */
+function applyPointsDecay(data) {
+  var today = getTodayStr();
+  if (!data.user.lastPointsUseDate) data.user.lastPointsUseDate = today;
+
+  var lastUse = new Date(data.user.lastPointsUseDate);
+  var now = new Date();
+  var daysSince = Math.floor((now - lastUse) / (1000 * 60 * 60 * 24));
+
+  if (daysSince > 7 && data.user.stars > 0) {
+    var daysDecay = daysSince - 7;
+    var decayRate = Math.pow(0.98, daysDecay);
+    var newStars = Math.floor(data.user.stars * decayRate);
+    if (newStars < data.user.stars) {
+      var lost = data.user.stars - newStars;
+      data.user.stars = Math.max(newStars, 10);
+      addPointsLog(data, 'spend', lost, '积分衰减（' + daysSince + '天未使用）');
+    }
+  }
+  data.user.lastPointsUseDate = today;
+}
+
+/** 限时双倍积分：周末双倍 */
+function getPointMultiplier() {
+  var day = new Date().getDay();
+  return (day === 0 || day === 6) ? 2 : 1;  // 周末双倍
+}
+
 /** 每月重置守护卡 */
 function resetMonthlyGuardianCards(data) {
   var now = new Date();
@@ -372,6 +419,7 @@ function resetMonthlyGuardianCards(data) {
 function validateStreak() {
   var data = getAppData();
   updateFlameState(data);
+  applyPointsDecay(data);
   saveAppData(data);
   return data;
 }
@@ -921,6 +969,7 @@ module.exports = {
   useGuardianCard,
   buyGuardianCard,
   updateFlameState,
+  getPointMultiplier,
   // DECR 埋点
   trackDailyMetric,
   // 亲子契约

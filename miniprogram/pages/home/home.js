@@ -66,7 +66,9 @@ Page({
     allDone: false,          // 今日任务是否全部完成
     showAIRecommend: false,  // AI 练习推荐卡片
     aiRecommendSubject: '',  // 推荐学科
-    activeContracts: []      // 活跃亲子契约
+    activeContracts: [],     // 活跃亲子契约
+    showShareCard: false,    // 分享卡片弹窗
+    shareImagePath: ''        // 生成的分享图路径
   },
 
   _confettiTimer: null,
@@ -158,6 +160,30 @@ Page({
       }, 800);
     }
   },
+
+  /** 跳转到排行榜 */
+  goToLeaderboard() {
+    wx.navigateTo({ url: '/pages/leaderboard/leaderboard' });
+  },
+
+  /** 跳转到番茄钟 */
+  goToPomodoro() {
+    wx.navigateTo({ url: '/pages/pomodoro/pomodoro' });
+  },
+
+  /** 生成分享卡片 */
+  generateShareCard() {
+    var share = require('../../utils/share');
+    var that = this;
+    share.generateCard(this.data.streak, this.data.stars, null, {
+      monthCheckins: this.data.doneCount,
+      totalCheckins: this.data.totalCount
+    }).then(function(path) {
+      that.setData({ shareImagePath: path, showShareCard: true });
+    }).catch(function() {});
+  },
+
+  closeShareCard() { this.setData({ showShareCard: false }); },
 
   /** 跳转到 AI 出题 */
   goToAI() {
@@ -514,6 +540,9 @@ Page({
       storage.updateContractProgress();
       // 播放动画
       this.playCelebrate();
+
+      // 生成分享卡片
+      this.generateShareCard();
 
       // 检查徽章（需重新计算徽章数据的 earned 状态）
       const newBadges = storage.checkBadges();
