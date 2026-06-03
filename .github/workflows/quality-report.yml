@@ -2,6 +2,7 @@
 # 每日题库质量报告
 # UTC 00:00 = 北京时间 08:00，每天自动运行
 # 也可在 GitHub Actions 页面手动触发
+# ⚠️ 依赖 secrets: CHECK_QUALITY_URL, WECHAT_WEBHOOK（可选）
 # ============================================================
 name: 每日质量报告
 
@@ -17,8 +18,22 @@ jobs:
   quality-report:
     name: 生成并推送质量报告
     runs-on: ubuntu-latest
+    # 仅在必要 secrets 已配置时运行，避免定时任务空跑报错
+    if: ${{ secrets.CHECK_QUALITY_URL != '' }}
     timeout-minutes: 5
     steps:
+      - name: 检查依赖
+        run: |
+          echo "检查 CHECK_QUALITY_URL 是否已配置..."
+          if [ -z "${{ secrets.CHECK_QUALITY_URL }}" ]; then
+            echo "⚠️ CHECK_QUALITY_URL 未配置，跳过质量报告生成"
+            echo "请前往 Settings → Secrets → Actions 添加以下 secrets："
+            echo "  - CHECK_QUALITY_URL: checkQuality 云函数的 HTTP 触发器地址"
+            echo "  - WECHAT_WEBHOOK: (可选) 企业微信机器人 webhook 地址"
+            exit 0
+          fi
+          echo "✅ CHECK_QUALITY_URL 已配置"
+
       - name: 调用 checkQuality 云函数
         id: report
         env:
