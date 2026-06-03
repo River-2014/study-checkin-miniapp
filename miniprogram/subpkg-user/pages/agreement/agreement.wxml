@@ -1,21 +1,15 @@
 <view class="page">
   <view class="card">
     <text class="title">用户协议</text>
-    <text class="update-date">更新日期：2025年6月</text>
+    <text class="update-date">更新日期：2025年7月</text>
+    <text class="subtitle">生效日期：2025年7月1日</text>
 
-    <text class="section-title">一、服务说明</text>
-    <text class="content">小升初冲刺打卡（以下简称"本小程序"）是一款面向11-12岁学生的本地学习打卡工具，旨在帮助学生培养良好的学习习惯。</text>
-
-    <text class="section-title">二、用户责任</text>
-    <text class="content">1. 家长应指导孩子合理使用本小程序，避免过度依赖电子设备。\n2. 用户应遵守微信平台的使用规范，不得利用本小程序从事违法违规活动。\n3. 本地数据请妥善保管，卸载小程序将导致所有本地数据丢失。</text>
-
-    <text class="section-title">三、免责声明</text>
-    <text class="content">1. 本小程序的AI出题功能仅供参考，不构成任何教育建议或承诺。\n2. 积分兑换的奖励由家长自行确认兑现，本小程序不承担相关责任。\n3. 因微信平台政策调整、云服务故障等原因导致的服务中断，我们不承担赔偿责任。</text>
-
-    <text class="section-title">四、知识产权</text>
-    <text class="content">本小程序的代码、设计、题库内容等知识产权归开发者所有。用户不得反向工程、复制或修改本小程序。</text>
-
-    <text class="section-title">五、协议修改</text>
-    <text class="content">我们有权根据需要修改本协议，修改后的协议将在小程序内公示。继续使用即视为同意修改后的协议。</text>
+    <block wx:for="{{sections}}" wx:key="title">
+      <text class="section-title">{{item.title}}</text>
+      <text class="content" wx:if="{{item.content}}">{{item.content}}</text>
+      <block wx:if="{{item.items}}">
+        <text class="content" wx:for="{{item.items}}" wx:for-item="li" wx:key="*this">{{li}}</text>
+      </block>
+    </block>
   </view>
 </view>

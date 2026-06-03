@@ -1,0 +1,40 @@
+{
+  "name": "学习打卡小程序-deploy",
+  "version": "1.0.0",
+  "description": "学习打卡小程序自动化部署配置",
+  "scripts": {
+    "deploy:dev": "./deploy/scripts/deploy-cloud-functions.sh dev && ./deploy/scripts/upload-miniprogram.sh dev",
+    "deploy:test": "./deploy/scripts/deploy-cloud-functions.sh test && ./deploy/scripts/upload-miniprogram.sh test",
+    "deploy:prod": "./deploy/scripts/deploy-cloud-functions.sh prod && ./deploy/scripts/upload-miniprogram.sh prod",
+    "deploy:functions:dev": "./deploy/scripts/deploy-cloud-functions.sh dev",
+    "deploy:functions:test": "./deploy/scripts/deploy-cloud-functions.sh test",
+    "deploy:functions:prod": "./deploy/scripts/deploy-cloud-functions.sh prod",
+    "deploy:miniprogram:dev": "./deploy/scripts/upload-miniprogram.sh dev",
+    "deploy:miniprogram:test": "./deploy/scripts/upload-miniprogram.sh test",
+    "deploy:miniprogram:prod": "./deploy/scripts/upload-miniprogram.sh prod",
+    "lint": "echo 'Running lint...' && node -c miniprogram/**/*.js",
+    "test": "echo 'Running tests...'",
+    "build": "echo 'Building...'",
+    "predeploy": "npm run lint && npm run test && npm run build"
+  },
+  "keywords": [
+    "wechat",
+    "miniprogram",
+    "cloudbase",
+    "cicd",
+    "automation"
+  ],
+  "author": "DevOps Automator <devops@example.com>",
+  "license": "MIT",
+  "dependencies": {
+    "miniprogram-ci": "^1.9.15",
+    "@cloudbase/cli": "^1.9.9"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/River-2014/学习打卡小程序.git"
+  }
+}

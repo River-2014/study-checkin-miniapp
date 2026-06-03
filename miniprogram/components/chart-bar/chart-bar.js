@@ -41,13 +41,14 @@ Component({
         canvas.height = height * dpr;
         ctx.scale(dpr, dpr);
 
+        var options = that.data.options || {};
         var opt = {
           width: width,
           height: height,
-          padding: that.data.options.padding,
-          barColor: that.data.options.barColor,
-          labelColor: that.data.options.labelColor,
-          animated: that.data.options.animated !== false
+          padding: options.padding,
+          barColor: options.barColor,
+          labelColor: options.labelColor,
+          animated: options.animated !== false
         };
 
         barChart.drawBarChart(canvas, ctx, that.data.data, opt);

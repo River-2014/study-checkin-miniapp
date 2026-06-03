@@ -3,11 +3,50 @@ const dateUtil = require('../../utils/date');
 const knowledgeBase = require('../../utils/knowledgeBase');
 const antiHallucination = require('../../utils/antiHallucination');
 
+// ===== 学段差异化出题配置 =====
+var STAGE_PROMPT_CONFIG = {
+  'primary-low': {
+    role: '小学低年级老师',
+    book: '小学教材和练习册',
+    constraints: '题目字数≤50字，尽量使用图片辅助理解。参考答案需简单明了。',
+    imageRate: 0.5, maxQuestions: 5, temperature: 0.8
+  },
+  'primary-high': {
+    role: '小学高年级老师',
+    book: '小升初考试大纲和小学教材',
+    constraints: '题目应符合小学高年级认知水平，不得超纲。选择题选项不超过4个。',
+    imageRate: 0.3, maxQuestions: 8, temperature: 0.7
+  },
+  'middle': {
+    role: '初中学科老师',
+    book: '中考考试大纲和初中教材',
+    constraints: '题目应符合中考命题规范。理科题需包含解题步骤。选择题选项为4个。',
+    imageRate: 0.15, maxQuestions: 10, temperature: 0.6
+  },
+  'high': {
+    role: '高中学科老师',
+    book: '高考考试大纲和高中教材',
+    constraints: '题目应模拟高考题型风格。理科题需完整的公式推导。选择题选项为4个。',
+    imageRate: 0.05, maxQuestions: 12, temperature: 0.5
+  }
+};
+
+function getStagePromptConfig(grade) {
+  var stage = storage.getStage(grade);
+  return STAGE_PROMPT_CONFIG[stage] || STAGE_PROMPT_CONFIG['primary-high'];
+}
+
+function getStageSubjects(grade) {
+  var appData = storage.getAppData();
+  var track = (appData.user && appData.user.track) || null;
+  return storage.getSubjectsForGrade(grade, track);
+}
+
 // API Key 在 ai-report 云函数环境变量中配置，前端不暴露
 
 Page({
   data: {
-    subjects: ['数学', '语文', '英语'],
+    subjects: getStageSubjects(storage.getAppData().user.currentGrade || 6),
     subjectIndex: 0,
     gradeList: knowledgeBase.GRADE_LIST,
     gradeIndex: 5,
@@ -218,15 +257,15 @@ var kps = allowed.length > 0 ? allowed : ['通用'];
       return;
     }
 
-    var prompt = '你是一位资深的小学' + subject + '老师，正在帮助一名' + grade + '学生备战考试。\n'
+    var promptCfg = getStagePromptConfig(grade);
+    var prompt = '你是一位资深的' + promptCfg.role + subject + '老师，正在帮助一名' + grade + '学生备战考试。\n'
       + '学生使用' + textbook + '教材，目前需要「' + pref + '」。\n'
       + '【严格约束】\n'
-      + '1. 请基于中国小学' + grade + '真实教材和常见考试题型出题，不得编造超纲知识点。\n'
+      + '1. 请基于中国' + promptCfg.book + '出题，不得编造超纲知识点。\n'
       + '2. 知识点必须在以下范围内选取：' + kp + '。\n'
       + '3. 难度「' + diff + '」必须与' + grade + '认知水平匹配。\n'
-      + '4. 如果题型含选择题，选项必须合理且只有一个正确答案。\n'
-      + '5. 【数学自检】生成后请逐条验算：将答案代回题目，确认完全满足题设条件才可输出。\n'
-      + '6. 对于"移多补少"类题目（两人数量不等、移动后相等），移动数必须等于(较大数-较小数)÷2，且差必须为偶数才有整数解。\n'
+      + '4. ' + promptCfg.constraints + '\n'
+      + '5. 【自检】生成后请逐条验算：将答案代回题目，确认完全满足题设条件才可输出。\n'
       + '请生成' + actualCount + '道' + type + '。\n';
 
     if (type === '听力填空') {
@@ -951,8 +990,13 @@ var kps = allowed.length > 0 ? allowed : ['通用'];
     var qs = this.data.questions;
     wx.showLoading({ title: '生成中...' });
     var canvasW = 750;
+    var maxH = 6000;
+    var maxQs = Math.floor((maxH - 100) / 160);
+    if (qs.length > maxQs) {
+      wx.showToast({ title: '题目过多，仅导出前' + maxQs + '题', icon: 'none', duration: 2500 });
+      qs = qs.slice(0, maxQs);
+    }
     var canvasH = 100 + qs.length * 160;
-    if (canvasH > 4000) canvasH = 4000;
 
     var that = this;
     var query = wx.createSelectorQuery();
@@ -971,7 +1015,7 @@ var kps = allowed.length > 0 ? allowed : ['通用'];
       ctx.fillStyle = '#2D3436';
       ctx.font = 'bold 36px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('小升初冲刺练习卷', canvasW / 2, 50);
+      ctx.fillText('成长刻度 · 练习卷', canvasW / 2, 50);
       ctx.font = '20px sans-serif';
       ctx.fillStyle = '#B2BEC3';
       ctx.fillText(new Date().toLocaleDateString() + ' · 共' + qs.length + '题', canvasW / 2, 80);

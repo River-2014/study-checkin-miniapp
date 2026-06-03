@@ -1,7 +1,7 @@
 <view class="login-page">
   <view class="login-card">
     <view class="login-icon">📚</view>
-    <view class="login-title">小升初冲刺打卡</view>
+    <view class="login-title">成长刻度</view>
     <view class="login-desc">登录后可同步学习数据到云端</view>
     <button class="btn btn-primary" bindtap="onLogin" loading="{{loading}}">
       微信一键登录

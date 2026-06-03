@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "排行榜",
-  "usingComponents": {}
+  "usingComponents": {
+    "tab-switch": "/components/tab-switch/tab-switch"
+  }
 }

@@ -1,5 +1,5 @@
 .practice-page {
-  background: #FFF8E7;
+  background: var(--bg-page);
   min-height: 100vh;
 }
 
@@ -14,16 +14,16 @@
   justify-content: space-between;
   align-items: center;
   padding: 16rpx 0;
-  border-bottom: 1rpx solid #F0F0F0;
+  border-bottom: 1rpx solid var(--border-color);
 }
 .filter-label {
   font-size: 28rpx;
-  color: #2D3436;
+  color: var(--text-primary);
   font-weight: 500;
 }
 .picker-value {
   font-size: 28rpx;
-  color: #FF9F43;
+  color: var(--color-primary);
 }
 
 /* 题型标签 */
@@ -36,19 +36,19 @@
 .type-tag {
   padding: 10rpx 28rpx;
   border-radius: 30rpx;
-  background: #F0F0F0;
+  background: var(--border-color);
   font-size: 26rpx;
-  color: #636E72;
+  color: var(--text-secondary);
   border: 2rpx solid transparent;
 }
 .type-tag-active {
-  background: #FFF3E0;
-  color: #FF9F43;
-  border-color: #FF9F43;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .count-num {
-  color: #FF9F43;
+  color: var(--color-primary);
   font-weight: bold;
 }
 
@@ -60,8 +60,8 @@
 /* 进度条 */
 .question-progress {
   padding: 16rpx 24rpx;
-  background: #fff;
-  border-bottom: 1rpx solid #F0F0F0;
+  background: var(--bg-card);
+  border-bottom: 1rpx solid var(--border-color);
 }
 .progress-info {
   display: flex;
@@ -69,23 +69,23 @@
   align-items: center;
   margin-bottom: 10rpx;
   font-size: 26rpx;
-  color: #636E72;
+  color: var(--text-secondary);
 }
 .back-link {
-  color: #FF9F43;
+  color: var(--color-primary);
 }
 .submit-early {
-  color: #FF9F43;
+  color: var(--color-primary);
   font-weight: 500;
 }
 .progress-bar-bg {
   height: 6rpx;
-  background: #EEE;
+  background: var(--border-light);
   border-radius: 3rpx;
 }
 .progress-bar-fill {
   height: 100%;
-  background: #FF9F43;
+  background: var(--color-primary);
   border-radius: 3rpx;
   transition: width 0.3s;
 }
@@ -101,7 +101,7 @@
 
 /* 题目卡片 */
 .question-card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 20rpx;
   padding: 28rpx;
   margin-bottom: 16rpx;
@@ -115,25 +115,25 @@
 .q-num {
   font-size: 32rpx;
   font-weight: bold;
-  color: #2D3436;
+  color: var(--text-primary);
 }
 .q-type-tag {
   font-size: 22rpx;
-  background: #FFF3E0;
-  color: #FF9F43;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
   padding: 4rpx 12rpx;
   border-radius: 8rpx;
 }
 .q-difficulty {
   font-size: 22rpx;
-  background: #E8F5E9;
-  color: #2ED573;
+  background: var(--color-success-light);
+  color: var(--color-success);
   padding: 4rpx 12rpx;
   border-radius: 8rpx;
 }
 .q-stem {
   font-size: 30rpx;
-  color: #2D3436;
+  color: var(--text-primary);
   line-height: 1.8;
   margin-bottom: 24rpx;
 }
@@ -149,26 +149,26 @@
   align-items: center;
   padding: 20rpx 24rpx;
   border-radius: 16rpx;
-  border: 2rpx solid #E8E8E8;
+  border: 2rpx solid var(--border-light);
   font-size: 28rpx;
   transition: all 0.2s;
 }
 .option-selected {
-  border-color: #FF9F43;
-  background: #FFF3E0;
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 .option-correct {
-  border-color: #2ED573;
-  background: #E8F5E9;
+  border-color: var(--color-success);
+  background: var(--color-success-light);
 }
 .option-wrong {
-  border-color: #FF6B6B;
-  background: #FFE0E0;
+  border-color: var(--color-error);
+  background: var(--color-error-light);
 }
 .opt-label {
   font-weight: bold;
   margin-right: 12rpx;
-  color: #636E72;
+  color: var(--text-secondary);
   width: 36rpx;
 }
 
@@ -182,21 +182,21 @@
   text-align: center;
   padding: 24rpx;
   border-radius: 16rpx;
-  border: 2rpx solid #E8E8E8;
+  border: 2rpx solid var(--border-light);
   font-size: 30rpx;
   font-weight: bold;
-  color: #636E72;
+  color: var(--text-secondary);
   transition: all 0.2s;
 }
 .judge-active {
-  border-color: #FF9F43;
-  background: #FFF3E0;
-  color: #FF9F43;
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
 .judge-active.judge-wrong {
-  border-color: #FF6B6B;
-  color: #FF6B6B;
-  background: #FFE0E0;
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: var(--color-error-light);
 }
 .judge-disabled {
   opacity: 0.6;
@@ -207,21 +207,21 @@
 .blank-input {
   width: 100%;
   height: 80rpx;
-  border: 2rpx solid #E8E8E8;
+  border: 2rpx solid var(--border-light);
   border-radius: 12rpx;
   padding: 0 20rpx;
   font-size: 28rpx;
   box-sizing: border-box;
 }
 .blank-input:focus {
-  border-color: #FF9F43;
+  border-color: var(--color-primary);
 }
 
 /* ===== 简答题 ===== */
 .essay-textarea {
   width: 100%;
   height: 200rpx;
-  border: 2rpx solid #E8E8E8;
+  border: 2rpx solid var(--border-light);
   border-radius: 12rpx;
   padding: 16rpx;
   font-size: 28rpx;
@@ -232,36 +232,36 @@
 .analysis {
   margin-top: 24rpx;
   padding: 20rpx;
-  background: #FAFAFA;
+  background: var(--bg-gray-light);
   border-radius: 12rpx;
 }
 .correct-badge {
   font-size: 28rpx;
-  color: #2ED573;
+  color: var(--color-success);
   font-weight: bold;
   margin-bottom: 8rpx;
 }
 .wrong-badge {
   font-size: 28rpx;
-  color: #FF6B6B;
+  color: var(--color-error);
   font-weight: bold;
   margin-bottom: 8rpx;
 }
 .correct-answer {
   font-size: 28rpx;
-  color: #2ED573;
+  color: var(--color-success);
   font-weight: bold;
   margin-bottom: 8rpx;
 }
 .analysis-text {
   font-size: 26rpx;
-  color: #636E72;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 8rpx;
 }
 .exam-point {
   font-size: 24rpx;
-  color: #B2BEC3;
+  color: var(--text-hint);
 }
 
 /* ===== 提交栏 ===== */
@@ -272,15 +272,15 @@
   right: 0;
   padding: 20rpx 24rpx;
   padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  background: #fff;
-  box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+  background: var(--bg-card);
+  box-shadow: 0 -2rpx 10rpx var(--bg-overlay);
 }
 
 /* ===== 结果底部 ===== */
 .result-footer {
   margin: 24rpx;
   padding: 24rpx;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 20rpx;
 }
 .result-score {
@@ -290,19 +290,19 @@
 .score-label {
   display: block;
   font-size: 24rpx;
-  color: #B2BEC3;
+  color: var(--text-hint);
 }
 .score-num {
   display: block;
   font-size: 56rpx;
   font-weight: bold;
-  color: #FF9F43;
+  color: var(--color-primary);
   margin: 8rpx 0;
 }
 .score-detail {
   display: block;
   font-size: 24rpx;
-  color: #636E72;
+  color: var(--text-secondary);
 }
 .result-actions {
   display: flex;

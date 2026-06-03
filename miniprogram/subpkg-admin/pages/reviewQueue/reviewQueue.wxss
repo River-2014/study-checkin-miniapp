@@ -1,1 +1,9 @@
-/* subpkg-admin/pages/reviewQueue/reviewQueue.wxss */
+.container { padding-bottom: 40rpx; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 20rpx; background: var(--bg-card); border-bottom: 1px solid #eee; font-size: 28rpx; }
+.review-list { height: calc(100vh - 100rpx); }
+.review-item { padding: 20rpx; border-bottom: 1px solid #f0f0f0; }
+.r-stem { font-size: 28rpx; color: var(--text-primary); margin-bottom: 10rpx; }
+.r-meta { display: flex; gap: 8rpx; margin-bottom: 12rpx; }
+.tag { padding: 2rpx 10rpx; background: var(--color-success-light); color: var(--color-success); border-radius: 4rpx; font-size: 22rpx; }
+.r-actions { display: flex; gap: 12rpx; }
+.empty { text-align: center; padding: 120rpx; color: var(--text-placeholder); font-size: 28rpx; }

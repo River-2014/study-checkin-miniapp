@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "模拟考试",
-  "usingComponents": {
-    "chart-radar": "/components/chart-radar/chart-radar",
-    "chart-bar": "/components/chart-bar/chart-bar"
-  }
-}

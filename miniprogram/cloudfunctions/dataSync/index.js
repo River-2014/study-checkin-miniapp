@@ -100,6 +100,18 @@ exports.main = async (event, context) => {
       var serverVersion = serverDoc.version || 0;
       var localVersion = event.localVersion || 0;
 
+      // 如果云端 data 为 null（被错误同步覆盖），优先使用本地数据
+      if (!serverDoc.data && event.localData) {
+        await userDataCollection.doc(serverDoc._id).update({
+          data: {
+            data: event.localData,
+            version: localVersion || Date.now(),
+            updatedAt: db.serverDate()
+          }
+        });
+        return { success: true, source: 'local_recovered', version: localVersion || Date.now() };
+      }
+
       if (serverVersion >= localVersion) {
         // 云端更新或相同，使用云端数据
         return { success: true, source: 'server', data: serverDoc.data, version: serverVersion };

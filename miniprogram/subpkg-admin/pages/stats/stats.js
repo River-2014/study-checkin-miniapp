@@ -1,66 +1,46 @@
-// subpkg-admin/pages/stats/stats.js
+var adminGuard = require('../../utils/adminGuard');
+
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    timeRange: 'last30days',
+    loading: true,
+    stats: null,
+    subjectChart: null,
+    difficultyChart: null,
+    topMistakes: [],
+    kpErrors: {}
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-
+  onLoad: function() {
+    adminGuard.checkAdminPermission(this);
+    this.loadStats();
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
+  loadStats: function() {
+    var that = this;
+    that.setData({ loading: true });
 
+    wx.cloud.callFunction({
+      name: 'getStats',
+      data: { timeRange: that.data.timeRange }
+    }).then(function(res) {
+      var data = (res.result || {}).data || {};
+      that.setData({
+        stats: data,
+        loading: false,
+        subjectChart: { items: (data.subjectAccuracy || []).map(function(s) { return { label: s.subject, value: s.accuracy }; }) },
+        difficultyChart: { items: (data.difficultyAccuracy || []).map(function(d) { return { label: d.difficulty, value: d.accuracy }; }) },
+        topMistakes: data.topMistakes || [],
+        kpErrors: data.knowledgePointErrors || {}
+      });
+    }).catch(function() {
+      wx.showToast({ title: '加载失败', icon: 'none' });
+      that.setData({ loading: false });
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  onTimeRangeChange: function(e) {
+    this.setData({ timeRange: e.detail.value });
+    this.loadStats();
   }
-})
+});

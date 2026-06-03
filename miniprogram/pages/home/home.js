@@ -1,6 +1,35 @@
 /** 首页 - 打卡页 */
 const storage = require('../../utils/storage');
 
+function stageLabel(stage) {
+  return stage === 'primary-low' ? '小学低段' : stage === 'primary-high' ? '小学高段' : stage === 'middle' ? '初中' : '高中';
+}
+
+function getExamCountdown(grade) {
+  return grade === 9 || grade === 12;
+}
+
+function getExamCountdownLabel(grade) {
+  if (grade === 9) return '距中考还有';
+  if (grade === 12) return '距高考还有';
+  return '';
+}
+
+function calcExamDays(grade) {
+  var now = new Date();
+  var examDate;
+  if (grade === 9) {
+    examDate = new Date(now.getFullYear(), 5, 15);
+    if (now > examDate) examDate = new Date(now.getFullYear() + 1, 5, 15);
+  } else if (grade === 12) {
+    examDate = new Date(now.getFullYear(), 5, 7);
+    if (now > examDate) examDate = new Date(now.getFullYear() + 1, 5, 7);
+  } else {
+    return 0;
+  }
+  return Math.max(0, Math.ceil((examDate - now) / (1000 * 60 * 60 * 24)));
+}
+
 var ENCOURAGE_LIST = [
   // 通用
   '太棒了！离梦想更近了🌟', '坚持就是胜利💪', '你是最棒的！🏆',
@@ -76,6 +105,14 @@ var FLAME_CONFIG = {
 Page({
   data: {
     greeting: '',
+    currentStage: 'primary-high',
+    currentGradeLabel: '六年级',
+    currentStageLabel: '小学高段',
+    stageRole: { icon: '🦊', name: '小勇士' },
+    transitionBonus: false,
+    showExamCountdown: false,
+    examCountdownLabel: '',
+    examCountdownDays: 0,
     stars: 0,
     streak: 0,
     longestStreak: 0,
@@ -101,8 +138,9 @@ Page({
     showAIRecommend: false,  // AI 练习推荐卡片
     aiRecommendSubject: '',  // 推荐学科
     activeContracts: [],     // 活跃亲子契约
-    showShareCard: false,    // 分享卡片弹窗
-    shareImagePath: ''        // 生成的分享图路径
+    showShareCard: false,
+    shareImagePath: '',
+    foldExpanded: false       // 更多功能折叠面板
   },
 
   _confettiTimer: null,
@@ -154,44 +192,38 @@ Page({
     this.setData({ aiLoading: true, aiAdvice: '' });
 
     // 尝试调用云函数，失败则用本地兜底
-    const tryCloud = () => {
-      if (typeof wx.cloud !== 'undefined') {
-        try {
-          wx.cloud.callFunction({
-            name: 'ai-report',
-            data: { dailyRates, subjects: mistakeSubjects || '无', streak: data.user.streak, stars: data.user.stars },
-            success: (res) => {
-              const text = res.result && res.result.advice ? res.result.advice : (res.result && res.result.fallback ? res.result.fallback : null);
-              if (text) {
-                this.setData({ aiAdvice: text, aiLoading: false });
-                return true;
-              }
-              return false;
-            },
-            fail: () => false
-          });
-          return true;
-        } catch(e) {
-          return false;
-        }
-      }
-      return false;
-    };
+    const fallbacks = [
+      '坚持就是胜利！每天进步一点点，每一步都算数🔥',
+      '你已经连续打卡 ' + data.user.streak + ' 天了，非常棒的坚持！继续保持💪',
+      '近7天完成率：' + dailyRates.filter(r => r > 0).length + ' 天有打卡，继续加油哦📈',
+      mistakeSubjects ? '错题主要集中在 ' + mistakeSubjects + '，建议多练练这些学科📖' : '',
+      '累计获得 ' + data.user.totalStarsEarned + ' 颗星星，你是最棒的🌟',
+      '学习是一个积累的过程，今天的努力会在明天开花结果🌱'
+    ];
+    const picked = fallbacks.filter(Boolean).sort(() => Math.random() - 0.5).slice(0, 2).join('\n');
 
-    if (!tryCloud()) {
-      // 本地兜底建议
-      const fallbacks = [
-        '坚持就是胜利！每天进步一点点，小升初必胜🔥',
-        '你已经连续打卡 ' + data.user.streak + ' 天了，非常棒的坚持！继续保持💪',
-        '近7天完成率：' + dailyRates.filter(r => r > 0).length + ' 天有打卡，继续加油哦📈',
-        mistakeSubjects ? '错题主要集中在 ' + mistakeSubjects + '，建议多练练这些学科📖' : '',
-        '累计获得 ' + data.user.totalStarsEarned + ' 颗星星，你是最棒的🌟',
-        '学习是一个积累的过程，今天的努力会在明天开花结果🌱'
-      ];
-      const picked = fallbacks.filter(Boolean).sort(() => Math.random() - 0.5).slice(0, 2).join('\n');
-      setTimeout(() => {
-        this.setData({ aiAdvice: picked, aiLoading: false });
-      }, 800);
+    // 异步尝试云端AI建议
+    var hasCloud = false;
+    try {
+      if (typeof wx.cloud !== 'undefined') {
+        var that = this;
+        wx.cloud.callFunction({
+          name: 'ai-report',
+          data: { dailyRates: dailyRates, subjects: mistakeSubjects || '无', streak: data.user.streak, stars: data.user.stars },
+          success: function(res) {
+            var text = (res.result && res.result.advice) ? res.result.advice : (res.result && res.result.fallback) || null;
+            if (text) that.setData({ aiAdvice: text, aiLoading: false });
+          },
+          fail: function() {
+            that.setData({ aiAdvice: picked, aiLoading: false });
+          }
+        });
+        hasCloud = true;
+      }
+    } catch(e) {}
+
+    if (!hasCloud) {
+      this.setData({ aiAdvice: picked, aiLoading: false });
     }
   },
 
@@ -219,7 +251,7 @@ Page({
   generateShareCard() {
     var share = require('../../utils/share');
     var that = this;
-    share.generateCard(this.data.streak, this.data.stars, null, {
+    share.generateShareCard(this.data.streak, this.data.stars, '小勇士', {
       monthCheckins: this.data.doneCount,
       totalCheckins: this.data.totalCount
     }).then(function(path) {
@@ -235,6 +267,10 @@ Page({
   },
 
   /** 跳转到错题本 */
+  toggleFold: function() {
+    this.setData({ foldExpanded: !this.data.foldExpanded });
+  },
+
   goToWrongBook() {
     wx.navigateTo({ url: '/subpkg-learn/pages/wrongbook/wrongbook' });
   },
@@ -389,6 +425,7 @@ Page({
   /** 加载并刷新数据 */
   loadData() {
     try {
+      storage.validateStreak();
       var data = storage.getAppData();
       var doneIds = storage.getTodayCheckins();
       var tasks = data.tasks || [];
@@ -411,6 +448,14 @@ Page({
       // 合并为单次 setData（减少 JS→渲染线程通信次数）
       this.setData({
         greeting: greeting,
+        currentStage: data.user.stage || 'primary-high',
+        stageRole: storage.getStageRole(data.user.stage || 'primary-high'),
+        transitionBonus: storage.isInTransitionBonus(data),
+        currentGradeLabel: storage.getGradeLabel(data.user.currentGrade || 6),
+        currentStageLabel: stageLabel(data.user.stage || 'primary-high'),
+        showExamCountdown: getExamCountdown(data.user.currentGrade || 6),
+        examCountdownLabel: getExamCountdownLabel(data.user.currentGrade || 6),
+        examCountdownDays: calcExamDays(data.user.currentGrade || 6),
         stars: data.user.stars || 0,
         streak: data.user.streak || 0,
         longestStreak: data.user.longestStreak || 0,

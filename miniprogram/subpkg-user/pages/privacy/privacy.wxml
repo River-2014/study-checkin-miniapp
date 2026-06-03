@@ -1,24 +1,15 @@
 <view class="page">
   <view class="card">
     <text class="title">隐私政策</text>
-    <text class="update-date">更新日期：2025年6月</text>
+    <text class="update-date">更新日期：2025年7月</text>
+    <text class="subtitle">生效日期：2025年7月1日</text>
 
-    <text class="section-title">一、信息收集</text>
-    <text class="content">本小程序为本地学习打卡工具，所有学习数据（打卡记录、积分、错题、AI练习记录等）默认存储在您的手机本地存储中。我们不会主动上传您的个人数据到服务器。</text>
-
-    <text class="section-title">二、信息使用</text>
-    <text class="content">当您主动使用云同步功能时，数据会加密传输到微信云开发环境。同步数据仅用于多设备间的数据恢复和家庭账号绑定。您随时可以在「我的」页面关闭云同步。</text>
-
-    <text class="section-title">三、权限说明</text>
-    <text class="content">• 相册/相机权限：用于记录错题图片和设置奖励图片，仅在您主动选择图片时请求。\n• 录音权限：仅用于AI出题中的口语朗读功能，需要您手动触发录音。\n• 订阅消息：用于开启每日学习打卡提醒，您可随时关闭。</text>
-
-    <text class="section-title">四、儿童隐私保护</text>
-    <text class="content">本小程序面向11-12岁学生。我们严格遵守《儿童个人信息网络保护规定》：\n1. 不收集儿童的个人身份信息（姓名、学校、身份证号等）\n2. 所有数据存储于本地，家长可通过家长模式查看和管理\n3. 不包含社交聊天功能，不展示其他用户的个人信息\n4. 排行榜功能默认关闭，需用户主动加入</text>
-
-    <text class="section-title">五、数据安全</text>
-    <text class="content">本地数据存储在微信小程序隔离环境中，其他应用无法访问。云端数据使用微信云开发的数据库权限控制，仅创建者本人和家长账号可读取。</text>
-
-    <text class="section-title">六、联系我们</text>
-    <text class="content">如对隐私政策有任何疑问，请通过小程序内的反馈功能联系我们。</text>
+    <block wx:for="{{sections}}" wx:key="title">
+      <text class="section-title">{{item.title}}</text>
+      <text class="content" wx:if="{{item.content}}">{{item.content}}</text>
+      <block wx:if="{{item.items}}">
+        <text class="content" wx:for="{{item.items}}" wx:for-item="li" wx:key="*this">{{li}}</text>
+      </block>
+    </block>
   </view>
 </view>

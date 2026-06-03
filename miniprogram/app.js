@@ -25,12 +25,14 @@ App({
 
   initLoginAndSync: function() {
     if (account.isLoggedIn()) {
-      // 已登录，每天首次自动同步
       var today = new Date().toDateString();
       var lastSyncDate = wx.getStorageSync('last_cloud_sync_date');
       if (lastSyncDate !== today) {
         wx.setStorageSync('last_cloud_sync_date', today);
-        account.syncData(null, null, Date.now());
+        var storage = require('./utils/storage');
+        var localData = storage.getAppData();
+        var version = (localData && localData._version) ? localData._version : Date.now();
+        account.syncData(null, localData, version);
       }
     }
   },

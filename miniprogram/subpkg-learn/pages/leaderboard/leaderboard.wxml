@@ -1,9 +1,5 @@
 <view class="lb-page">
-  <!-- TAB 切换 -->
-  <view class="lb-tabs">
-    <view class="lb-tab {{tab === 0 ? 'active' : ''}}" data-index="0" bindtap="switchTab">🔥 连续打卡</view>
-    <view class="lb-tab {{tab === 1 ? 'active' : ''}}" data-index="1" bindtap="switchTab">⭐ 累计积分</view>
-  </view>
+  <tab-switch tabs="{{lbTabs}}" active="{{tab}}" bind:change="onTabChange"></tab-switch>
 
   <!-- 未加入排行榜 -->
   <view class="lb-optin" wx:if="{{!optedIn}}">

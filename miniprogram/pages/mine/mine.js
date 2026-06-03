@@ -5,8 +5,19 @@ const account = require('../../utils/account');
 const EMOJI_LIST = ['📖', '🧮', '🔤', '📚', '📐', '🎧', '📜', '📝', '🏃', '😴', '🎨', '🔬', '🌍', '💻', '🎵', '✏️', '📏', '🗺️', '🧪', '🎭'];
 const CATEGORIES = ['语文', '数学', '英语', '综合', '运动', '生活'];
 
+function formatGrowthArchive(archive) {
+  if (!archive) return {};
+  archive.milestones = archive.milestones.map(function(m) {
+    var d = new Date(m.date);
+    m.dateStr = d.getFullYear() + '/' + (d.getMonth() + 1);
+    return m;
+  });
+  return archive;
+}
+
 Page({
   data: {
+    loaded: false,
     totalCheckins: 0,
     longestStreak: 0,
     totalStars: 0,
@@ -28,7 +39,9 @@ Page({
     reminderMinute: 30,
     reminderTimeStr: '19:30',
     reminderSubscribed: false,
+    isLoggedIn: false,
     isUnlocked: false,
+    settingsExpanded: false,
     userMode: 'student',
     isParent: false,
     childrenList: [],
@@ -37,11 +50,20 @@ Page({
   },
 
   onShow() {
-    const data = storage.getAppData();
+    var data = storage.getAppData();
     var mode = data.userMode || 'student';
+    var grade = (data.user && data.user.currentGrade) || 6;
+    var stage = (data.user && data.user.stage) || 'primary-high';
+    var stageLabel = stage === 'primary-low' ? '小学低段' : stage === 'primary-high' ? '小学高段' : stage === 'middle' ? '初中' : '高中';
     this.setData({
       userMode: mode,
-      isParent: mode === 'parent'
+      isParent: mode === 'parent',
+      isLoggedIn: account.isLoggedIn(),
+      currentGradeLabel: storage.getGradeLabel(grade),
+      currentStageLabel: stageLabel,
+      currentStage: stage,
+      currentTrack: (data.user && data.user.track) || null,
+      growthArchive: formatGrowthArchive(storage.getGrowthArchive(data))
     });
 
     // 加载孩子列表
@@ -57,7 +79,7 @@ Page({
 
     // 家长模式需要密码验证
     if (!data.user.isParentUnlocked) {
-      wx.navigateTo({ url: '/pages/password/password' });
+      wx.navigateTo({ url: '/subpkg-user/pages/password/password' });
       return;
     }
     this.setData({ isUnlocked: true });
@@ -79,6 +101,7 @@ Page({
     });
 
     this.setData({
+      loaded: true,
       totalCheckins: data.user.totalCheckins,
       longestStreak: data.user.longestStreak,
       totalStars: data.user.totalStarsEarned,
@@ -122,7 +145,7 @@ Page({
     this.setData({ isUnlocked: false });
     wx.showToast({ title: '已锁定', icon: 'success' });
     setTimeout(() => {
-      wx.navigateTo({ url: '/pages/password/password' });
+      wx.navigateTo({ url: '/subpkg-user/pages/password/password' });
     }, 500);
   },
 
@@ -181,6 +204,10 @@ Page({
     var that = this;
     // 模板 ID 需要在微信公众平台「订阅消息」中申请后替换
     var tmplId = 'YOUR_TEMPLATE_ID';
+    if (tmplId === 'YOUR_TEMPLATE_ID') {
+      wx.showToast({ title: '提醒模板未配置，请先在微信公众平台申请订阅消息模板', icon: 'none', duration: 3000 });
+      return;
+    }
     wx.requestSubscribeMessage({
       tmplIds: [tmplId],
       success: function(res) {
@@ -368,7 +395,44 @@ Page({
     });
   },
 
-  // ===== 身份切换 =====
+  toggleSettings: function() {
+    this.setData({ settingsExpanded: !this.data.settingsExpanded });
+  },
+
+  // ===== 账号管理 =====
+  onSetTrack: function(e) {
+    var track = e.currentTarget.dataset.track;
+    var appData = storage.getAppData();
+    storage.setUserGrade(appData, appData.user.currentGrade); // 触发 subject 刷新
+    appData.user.track = track;
+    storage.saveAppData(appData);
+    this.setData({ currentTrack: track });
+    wx.showToast({ title: track === 'science' ? '已切换理科' : '已切换文科', icon: 'success' });
+  },
+
+  onGoToLogin: function() {
+    wx.navigateTo({ url: '/subpkg-user/pages/login/login' });
+  },
+
+  onGoToRole: function() {
+    wx.navigateTo({ url: '/subpkg-user/pages/role/role' });
+  },
+
+  onLogout: function() {
+    var that = this;
+    wx.showModal({
+      title: '退出登录',
+      content: '退出后数据仍在本地保存，不会丢失。',
+      success: function(res) {
+        if (res.confirm) {
+          try { wx.removeStorageSync('loginUser'); } catch (e) {}
+          that.setData({ isLoggedIn: false });
+          wx.showToast({ title: '已退出登录', icon: 'success' });
+        }
+      }
+    });
+  },
+
   onSwitchRole() {
     var that = this;
     wx.showActionSheet({
@@ -389,30 +453,24 @@ Page({
 
   // ===== 家庭管理 =====
   onGoToFamily: function() {
-    wx.navigateTo({ url: '/pages/family/family' });
+    wx.navigateTo({ url: '/subpkg-user/pages/family/family' });
   },
 
   onGoToAdmin: function() {
-    wx.navigateTo({ url: '/pages/admin/admin' });
+    wx.navigateTo({ url: '/subpkg-admin/pages/admin/admin' });
   },
 
   // ===== 积分明细 =====
-  goToDetail() { wx.navigateTo({ url: '/pages/detail/detail' }); },
+  goToDetail() { wx.navigateTo({ url: '/subpkg-user/pages/detail/detail' }); },
   onOpenPointsLog() {
-    wx.navigateTo({ url: '/pages/pointslog/pointslog' });
-  },
-
-  // ===== 加星测试 =====
-  onAddStarsTest() {
-    storage.addStars(50);
-    this.loadData();
-    wx.showToast({ title: '已增加50 ⭐', icon: 'success' });
+    wx.navigateTo({ url: '/subpkg-user/pages/pointslog/pointslog' });
   },
 
   // ===== 云同步 =====
   cloudBackup: function() {
     wx.showLoading({ title: '同步中...' });
-    account.uploadData(storage.getAppData(), 'default', Date.now()).then(function() {
+    var childId = storage.getCurrentChildId() || 'default';
+    account.uploadData(storage.getAppData(), childId, Date.now()).then(function() {
       wx.hideLoading();
       wx.showToast({ title: '同步成功', icon: 'success' });
     }).catch(function() {
@@ -425,16 +483,34 @@ Page({
     var that = this;
     wx.showModal({
       title: '确认恢复',
-      content: '云端数据会覆盖当前数据，确定吗？',
+      content: '云端数据将与本地数据合并（云端版本优先），确定吗？',
       success: function(res) {
         if (!res.confirm) return;
         wx.showLoading({ title: '恢复中...' });
         account.downloadData('default').then(function(result) {
           wx.hideLoading();
           if (result && result.data) {
-            storage.saveAppData(result.data);
-            wx.showToast({ title: '恢复成功', icon: 'success' });
-            wx.switchTab({ url: '/pages/home/home' });
+            var local = storage.getAppData();
+            // 云版本更旧则保护新数据
+            var cloudVersion = result.version || 0;
+            var localVersion = local._version || 0;
+            if (localVersion > cloudVersion) {
+              wx.showModal({
+                title: '数据较新',
+                content: '本地数据（版本' + localVersion + '）比云端（版本' + cloudVersion + '）更新，确定覆盖？',
+                success: function(r2) {
+                  if (r2.confirm) {
+                    result.data._version = localVersion;
+                    storage.saveAppData(result.data);
+                    wx.showToast({ title: '已恢复云端数据', icon: 'success' });
+                  }
+                }
+              });
+            } else {
+              result.data._version = cloudVersion;
+              storage.saveAppData(result.data);
+              wx.showToast({ title: '恢复成功', icon: 'success' });
+            }
           } else {
             wx.showToast({ title: '没有可恢复的数据', icon: 'none' });
           }

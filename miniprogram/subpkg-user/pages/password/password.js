@@ -62,13 +62,18 @@ Page({
 
   /** 忘记密码 */
   onForgot() {
+    var that = this;
     wx.showModal({
       title: '重置密码',
-      content: '重置密码将恢复为默认密码 1234，确认重置？',
-      success: (res) => {
+      content: '重置后将清除当前密码，下次进入时直接设置新密码即可。确认重置？',
+      success: function(res) {
         if (res.confirm) {
           storage.changePassword('1234');
-          wx.showToast({ title: '已重置为 1234', icon: 'none' });
+          storage.setParentUnlocked(true);
+          wx.showToast({ title: '已重置，请重新设置密码', icon: 'none' });
+          setTimeout(function() {
+            wx.navigateBack();
+          }, 1000);
         }
       }
     });

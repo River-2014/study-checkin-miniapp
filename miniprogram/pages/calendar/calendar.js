@@ -5,6 +5,7 @@ const { getFirstDayOfMonth, getDaysInMonth, getTodayStr, formatDate } = require(
 Page({
   data: {
     year: 0,
+    loaded: false,
     month: 0,
     weekDays: ['日', '一', '二', '三', '四', '五', '六'],
     calendarDays: [],
@@ -68,6 +69,7 @@ Page({
     const totalCheckins = data.user.totalCheckins;
 
     this.setData({
+      loaded: true,
       year,
       month,
       calendarDays,

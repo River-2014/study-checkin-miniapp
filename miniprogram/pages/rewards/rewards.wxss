@@ -5,7 +5,7 @@
 
 /* ===== 积分头部 ===== */
 .stars-header {
-  background: linear-gradient(135deg, #FF9F43, #F39C12);
+  background: var(--gradient-primary);
   padding: 40rpx 32rpx;
   display: flex;
   align-items: center;
@@ -30,7 +30,7 @@
 .star-count-big {
   font-size: 48rpx;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-on-primary);
 }
 
 /* ===== 奖励网格 ===== */
@@ -52,14 +52,14 @@
 }
 
 .reward-card {
-  background: #FFFFFF;
+  background: var(--bg-card);
   border-radius: 24rpx;
   padding: 28rpx 16rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.06);
+  box-shadow: 0 4rpx 20rpx var(--bg-overlay);
   transition: all 0.3s;
 }
 
@@ -71,7 +71,7 @@
   font-size: 64rpx;
   width: 100rpx;
   height: 100rpx;
-  background: #FFF8E7;
+  background: var(--bg-page);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -81,29 +81,29 @@
 .reward-name {
   font-size: 28rpx;
   font-weight: 600;
-  color: #2D3436;
+  color: var(--text-primary);
   text-align: center;
 }
 
 .reward-cost {
   font-size: 28rpx;
   font-weight: 700;
-  color: #FF9F43;
-  background: #FFF8E7;
+  color: var(--color-primary);
+  background: var(--bg-page);
   padding: 6rpx 24rpx;
   border-radius: 20rpx;
 }
 
 .reward-cost.cost-not-enough {
-  color: #B2BEC3;
-  background: #F0F0F0;
+  color: var(--text-hint);
+  background: var(--border-color);
 }
 
 /* ===== 空提示 ===== */
 .section-title {
   font-size: 30rpx;
   font-weight: 700;
-  color: #2D3436;
+  color: var(--text-primary);
   padding: 24rpx 24rpx 16rpx;
 }
 
@@ -111,7 +111,7 @@
 .charity-grid { display: flex; flex-wrap: wrap; padding: 0 16rpx; gap: 12rpx; }
 .charity-card {
   width: calc(50% - 22rpx);
-  background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+  background: linear-gradient(135deg, var(--color-success-light), #C8E6C9);
   border-radius: 20rpx;
   padding: 24rpx 16rpx;
   display: flex; flex-direction: column; align-items: center; gap: 8rpx;
@@ -119,4 +119,5 @@
 .charity-card:active { transform: scale(0.97); }
 .charity-icon { font-size: 48rpx; }
 .charity-name { font-size: 26rpx; font-weight: 600; color: #2E7D32; }
-.charity-cost { font-size: 24rpx; color: #4CAF50; font-weight: 500; }
+.charity-cost { font-size: 24rpx; color: var(--color-success); font-weight: 500; }
+.charity-notice { padding: 16rpx 24rpx; font-size: var(--font-xs); color: var(--text-hint); text-align: center; line-height: 1.6; }

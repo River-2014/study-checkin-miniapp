@@ -7,7 +7,7 @@
   </view>
 
   <block wx:for="{{wrongList}}" wx:key="id">
-    <view class="card">
+    <view class="card card--compact">
       <view class="card-header">
         <text class="subject">{{item.subject}} · {{item.knowledge}}</text>
         <text class="diff">{{item.difficulty}}</text>

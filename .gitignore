@@ -29,3 +29,15 @@ npm-debug.log*
 
 # Claude 配置（个人配置，非项目文件）
 .claude/
+
+# 部署私钥（切勿提交到 Git）
+deploy/keys/*.key
+*.key
+*.pem
+*.p12
+*.pfx
+
+# 部署临时文件
+deploy/tmp/
+/tmp/
+*.tmp

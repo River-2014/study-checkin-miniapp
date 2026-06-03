@@ -1,2 +1,53 @@
-<!--subpkg-admin/pages/stats/stats.wxml-->
-<text>subpkg-admin/pages/stats/stats.wxml</text>
+<view class="container">
+  <!-- 时间范围 -->
+  <view class="time-bar">
+    <picker mode="selector" range="{{['最近7天','最近30天','全部']}}" range-key="{{}}" bindchange="onTimeRangeChange">
+      <button size="mini">{{timeRange === 'last7days' ? '最近7天' : timeRange === 'last30days' ? '最近30天' : '全部'}}</button>
+    </picker>
+  </view>
+
+  <block wx:if="{{!loading && stats}}">
+    <!-- 学科正确率柱状图 -->
+    <view class="card">
+      <view class="card-title">学科正确率</view>
+      <chart-bar data="{{subjectChart}}" wx:if="{{subjectChart.items.length > 0}}"></chart-bar>
+      <view wx:else class="empty">暂无数据</view>
+    </view>
+
+    <!-- 难度正确率折线图 -->
+    <view class="card">
+      <view class="card-title">难度正确率</view>
+      <chart-line data="{{difficultyChart}}" wx:if="{{difficultyChart.items.length > 0}}"></chart-line>
+      <view wx:else class="empty">暂无数据</view>
+    </view>
+
+    <!-- 高频错题 TOP10 -->
+    <view class="card">
+      <view class="card-title">高频错题 TOP{{topMistakes.length}}</view>
+      <view class="mistake-list">
+        <block wx:for="{{topMistakes}}" wx:key="*this">
+          <view class="mistake-item">
+            <view class="mistake-stem">{{index + 1}}. {{item.stem}}</view>
+            <view class="mistake-meta">{{item.subject}} {{item.grade}} | 错误{{item.errorCount}}次 | {{item.errorRate}}%</view>
+          </view>
+        </block>
+      </view>
+      <view wx:if="{{topMistakes.length === 0}}" class="empty">暂无数据</view>
+    </view>
+
+    <!-- 知识点热力图 -->
+    <view class="card" wx:for="{{Object.keys(kpErrors)}}" wx:key="*this" wx:for-item="subj">
+      <view class="card-title">{{subj}} - 知识点错误率</view>
+      <view class="heatmap">
+        <block wx:for="{{kpErrors[subj]}}" wx:key="knowledgePoint" wx:for-item="kp">
+          <view class="heat-cell {{kp.errorRate > 60 ? 'hot' : kp.errorRate > 30 ? 'warm' : 'cool'}}">
+            <text>{{kp.knowledgePoint}}</text>
+            <text>{{kp.errorRate}}%</text>
+          </view>
+        </block>
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+</view>

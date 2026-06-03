@@ -1,6 +1,23 @@
 <view class="mine-page">
-  <!-- ===== 统计卡片 ===== -->
-  <view class="card stats-summary">
+  <!-- 骨架屏 -->
+  <view wx:if="{{totalCheckins === 0 && !loaded}}" class="skeleton-wrap">
+    <view class="sk-shimmer" style="height: 100rpx; border-radius: var(--radius-xl); margin-bottom: 16rpx;"></view>
+    <view class="sk-shimmer skeleton--card" style="margin-bottom: 16rpx;"></view>
+    <view class="sk-shimmer skeleton--card" style="margin-bottom: 16rpx;"></view>
+    <view class="sk-shimmer skeleton--row"></view>
+    <view class="sk-shimmer skeleton--row"></view>
+  </view>
+
+  <!-- ================================
+       分组1: 📊 学习概况
+       ================================ -->
+  <view class="section-group">
+    <view class="group-header">
+      <text class="group-title">📊 学习概况</text>
+    </view>
+
+    <!-- 统计卡片 -->
+    <view class="card stats-summary">
     <view class="stat-row">
       <view class="stat-cell">
         <text class="stat-value">{{totalCheckins}}</text>
@@ -29,9 +46,39 @@
     </view>
     <view wx:else class="empty-hint">还没有获得徽章，继续加油吧！🔥</view>
   </view>
+  </view>
 
-  <!-- ===== 家长中心 ===== -->
-  <view wx:if="{{isParent}}" class="card" bindtap="goToDetail" hover-class="task-hover">
+  <!-- 成长档案 -->
+  <view wx:if="{{growthArchive.milestones.length > 0}}" class="card">
+    <view class="section-title">📈 成长档案</view>
+    <view class="growth-timeline">
+      <view wx:for="{{growthArchive.milestones}}" wx:key="stage" class="growth-node">
+        <view class="gn-dot"></view>
+        <view class="gn-content">
+          <text class="gn-label">{{item.label}}</text>
+          <text class="gn-grade">{{item.grade}}</text>
+          <text class="gn-date">{{item.dateStr}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="growth-stats">
+      <text class="gs-item">📊 累计打卡：{{growthArchive.totalCheckins}} 次</text>
+      <text class="gs-item">⭐ 累计积分：{{growthArchive.totalStars}} 分</text>
+      <text class="gs-item">📚 当前学科：{{growthArchive.totalSubjects}} 科</text>
+      <text class="gs-item">🍅 番茄专注：{{growthArchive.pomodoroTotal}} 分钟</text>
+    </view>
+  </view>
+
+  <!-- ================================
+       分组2: 🛠️ 学习管理
+       ================================ -->
+  <view class="section-group">
+    <view class="group-header">
+      <text class="group-title">🛠️ 学习管理</text>
+    </view>
+
+    <!-- 家长中心 -->
+    <view wx:if="{{isParent}}" class="card" bindtap="goToDetail" hover-class="task-hover">
     <view class="section-title">📋 家长中心</view>
     <text class="mine-hint">查看打卡明细、AI练习记录、积分流水、兑换记录</text>
   </view>
@@ -96,14 +143,45 @@
       🔒 锁定
     </button>
   </view>
+  </view>
 
-  <!-- ===== 身份切换 ===== -->
-  <view class="card">
-    <view class="section-title">🔄 身份切换</view>
-    <text class="mine-hint">当前：{{userMode === 'parent' ? '家长模式' : '学生模式'}}</text>
-    <button class="btn btn-primary btn-block" style="margin-top: 16rpx; background: linear-gradient(135deg, #A29BFE, #6C5CE7);" bindtap="onSwitchRole">
-      {{userMode === 'parent' ? '切换到学生模式' : '切换到家长模式'}}
-    </button>
+  <!-- ================================
+       分组3: ⚙️ 设置与更多（可折叠）
+       ================================ -->
+  <view class="section-group">
+    <view class="group-header fold-trigger" bindtap="toggleSettings">
+      <text class="group-title">⚙️ 设置与更多</text>
+      <text class="fold-arrow">{{settingsExpanded ? '▲' : '▼'}}</text>
+    </view>
+    <view wx:if="{{settingsExpanded}}" class="group-body">
+
+      <!-- 账号管理 -->
+      <view class="card">
+    <view class="section-title">👤 账号管理</view>
+    <view wx:if="{{!isLoggedIn}}">
+      <text class="mine-hint">登录后可同步数据到云端</text>
+      <button class="btn btn-primary btn-block" style="margin-top: 12rpx; background: linear-gradient(135deg, #FF9F43, #E8831A);" bindtap="onGoToLogin">
+        📱 微信一键登录
+      </button>
+    </view>
+    <view wx:else>
+      <text class="mine-hint">当前：{{userMode === 'parent' ? '👨‍👩‍👧 家长' : '👦 学生'}} · {{currentGradeLabel}} · {{currentStageLabel}}<text wx:if="{{currentStage === 'high'}}"> · {{currentTrack || '未选科'}}</text></text>
+      <view wx:if="{{currentStage === 'high'}}" style="margin-top: 12rpx;">
+        <text class="mine-hint">文理分科方向</text>
+        <view class="btns-row" style="margin-top: 8rpx;">
+          <button class="btn btn-small {{currentTrack === 'science' ? 'btn-primary' : ''}}" style="flex: 1; margin-right: 8rpx;" bindtap="onSetTrack" data-track="science">🔬 理科</button>
+          <button class="btn btn-small {{currentTrack === 'arts' ? 'btn-primary' : ''}}" style="flex: 1;" bindtap="onSetTrack" data-track="arts">📜 文科</button>
+        </view>
+      </view>
+      <view class="btns-row" style="margin-top: 12rpx;">
+        <button class="btn btn-primary btn-block" style="background: linear-gradient(135deg, #A29BFE, #6C5CE7);" bindtap="onGoToRole">
+          🔄 切换身份
+        </button>
+        <button class="btn btn-primary btn-block" style="margin-top: 12rpx; background: linear-gradient(135deg, var(--color-primary-dark), var(--color-error));" bindtap="onLogout">
+          🚪 退出登录
+        </button>
+      </view>
+    </view>
   </view>
 
   <!-- ===== 家庭管理 ===== -->
@@ -140,10 +218,6 @@
     <button class="btn btn-danger btn-block" bindtap="onResetAll">
       🗑️ 重置全部数据
     </button>
-    <button class="btn btn-small" style="margin-top: 16rpx; width: 100%; background: #F0F0F0; color: #636E72;" bindtap="onAddStarsTest">
-      ⭐ 加星测试（+50⭐）
-    </button>
-    <text class="dev-hint">开发模式 · 仅用于测试</text>
   </view>
 
   <!-- ===== 题库管理 ===== -->
@@ -153,15 +227,15 @@
     <button class="btn btn-primary btn-block" style="margin-top: 12rpx; background: linear-gradient(135deg, #636E72, #2D3436);" bindtap="onGoToAdmin">
       ⚙️ 进入题库管理
     </button>
+    </view>
+  </view>
   </view>
 
   <view class="safe-bottom"></view>
 </view>
 
 <!-- ===== 自定义任务弹窗 ===== -->
-<view wx:if="{{showTaskModal}}" class="modal-overlay" bindtap="closeTaskModal">
-  <view class="modal-content" catchtap="stopPropagation">
-    <text class="modal-title">✏️ 添加自定义任务</text>
+<modal-sheet show="{{showTaskModal}}" title="✏️ 添加自定义任务" bind:close="closeTaskModal">
 
     <view class="form-group">
       <text class="form-label">任务名称</text>
@@ -214,13 +288,10 @@
       <button class="btn btn-primary btn-block" bindtap="confirmAddTask">确认添加</button>
       <button class="btn btn-block" style="margin-top: 16rpx; background: #F0F0F0; color: #636E72;" bindtap="closeTaskModal">取消</button>
     </view>
-  </view>
-</view>
+</modal-sheet>
 
 <!-- ===== 自定义奖励弹窗 ===== -->
-<view wx:if="{{showRewardModal}}" class="modal-overlay" bindtap="closeRewardModal">
-  <view class="modal-content" catchtap="stopPropagation">
-    <text class="modal-title">🎁 添加自定义奖励</text>
+<modal-sheet show="{{showRewardModal}}" title="🎁 添加自定义奖励" bind:close="closeRewardModal">
 
     <view class="form-group">
       <text class="form-label">奖励名称</text>
@@ -251,5 +322,4 @@
       <button class="btn btn-primary btn-block" bindtap="confirmAddReward">确认添加</button>
       <button class="btn btn-block" style="margin-top: 16rpx; background: #F0F0F0; color: #636E72;" bindtap="closeRewardModal">取消</button>
     </view>
-  </view>
-</view>
+</modal-sheet>

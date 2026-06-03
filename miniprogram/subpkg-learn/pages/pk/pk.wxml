@@ -1,5 +1,6 @@
 <view class="pk-page">
   <view class="pk-header">🔥 打卡 PK 赛</view>
+  <view class="pk-notice">📢 当前为单机练习模式，对手数据根据同年级平均水平模拟生成</view>
 
   <!-- 我的数据 -->
   <view class="pk-card my-card">

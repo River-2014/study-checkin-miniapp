@@ -1,13 +1,14 @@
 var storage = require('../../utils/storage');
 
 Page({
-  data: { stars: 0, rewards: [], donations: [] },
+  data: { loaded: false, stars: 0, rewards: [], donations: [] },
 
   onShow() { this.loadData(); },
 
   loadData() {
     var data = storage.getAppData();
     this.setData({
+      loaded: true,
       stars: data.user.stars,
       rewards: data.rewards,
       donations: data.charityDonations || []

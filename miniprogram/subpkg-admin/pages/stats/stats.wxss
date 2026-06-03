@@ -1,1 +1,17 @@
-/* subpkg-admin/pages/stats/stats.wxss */
+.container { padding: 16rpx; padding-bottom: 40rpx; }
+.time-bar { padding: 16rpx 0; text-align: right; }
+
+.card { background: var(--bg-card); border-radius: 16rpx; padding: 24rpx; margin-bottom: 24rpx; box-shadow: 0 2rpx 12rpx var(--bg-overlay); }
+.card-title { font-size: 30rpx; font-weight: bold; color: var(--text-primary); margin-bottom: 20rpx; }
+.empty { text-align: center; padding: 60rpx 0; color: var(--text-placeholder); font-size: 26rpx; }
+.loading { text-align: center; padding: 120rpx 0; color: var(--text-placeholder); }
+
+.mistake-item { padding: 12rpx 0; border-bottom: 1px solid #f0f0f0; }
+.mistake-stem { font-size: 28rpx; color: var(--text-primary); }
+.mistake-meta { font-size: 22rpx; color: var(--text-placeholder); margin-top: 4rpx; }
+
+.heatmap { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.heat-cell { padding: 12rpx 20rpx; border-radius: 8rpx; font-size: 24rpx; display: flex; flex-direction: column; gap: 4rpx; }
+.heat-cell.hot { background: var(--color-error-light); color: var(--color-error); }
+.heat-cell.warm { background: var(--color-warning-light); color: var(--color-primary-dark); }
+.heat-cell.cool { background: var(--color-success-light); color: var(--color-success); }

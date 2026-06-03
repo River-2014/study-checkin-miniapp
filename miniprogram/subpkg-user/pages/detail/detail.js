@@ -4,6 +4,7 @@ const storage = require('../../utils/storage');
 Page({
   data: {
     activeTab: 0,
+    detailTabs: [{ label: '📅 打卡明细' }, { label: '⭐ 积分流水' }, { label: '🎁 兑换记录' }, { label: '🤖 AI练习' }],
     groupedCheckins: [],
     logs: [],
     redeemLogs: [],
@@ -124,11 +125,10 @@ Page({
     return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   },
 
-  switchTab: function(e) {
-    var index = parseInt(e.currentTarget.dataset.index);
+  onTabChange: function(e) {
+    var index = e.detail.index;
     this.setData({ activeTab: index });
     if (index === 3) {
-      // 准备折线图数据
       var that = this;
       setTimeout(function() { that.prepareLineChart(); }, 200);
     }

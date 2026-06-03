@@ -1,1 +1,32 @@
-/* subpkg-admin/pages/unauthorized/unauthorized.wxss */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 40rpx;
+  background: var(--bg-page);
+}
+.icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 16rpx;
+}
+.message {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  margin-bottom: 60rpx;
+  text-align: center;
+}
+.btn-back {
+  width: 400rpx;
+  background: var(--color-primary);
+  color: var(--text-on-primary);
+  border-radius: 40rpx;
+  font-size: 30rpx;
+}

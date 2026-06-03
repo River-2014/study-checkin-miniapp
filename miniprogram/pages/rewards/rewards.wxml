@@ -1,4 +1,11 @@
 <view class="rewards-page">
+  <!-- 骨架屏 -->
+  <view wx:if="{{!loaded}}" class="skeleton-wrap">
+    <view class="sk-shimmer" style="height: 160rpx; border-radius: var(--radius-xl); margin-bottom: 16rpx;"></view>
+    <view class="sk-shimmer skeleton--card" style="margin-bottom: 16rpx;"></view>
+    <view class="sk-shimmer skeleton--card" style="margin-bottom: 16rpx;"></view>
+  </view>
+
   <!-- ===== 积分余额 ===== -->
   <view class="stars-header">
     <text class="stars-label">我的星星</text>
@@ -50,6 +57,8 @@
       <text class="charity-cost">120 ⭐</text>
     </view>
   </view>
+
+  <view class="charity-notice">📌 积分捐赠为虚拟公益行为，旨在培养孩子的社会责任感。积分由开发者记录，定期以实物形式兑现真实公益捐赠。</view>
 
   <view class="safe-bottom"></view>
 </view>

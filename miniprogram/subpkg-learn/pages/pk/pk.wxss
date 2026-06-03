@@ -1,19 +1,20 @@
-.pk-page { padding: 24rpx; background: #F5F6FA; min-height: 100vh; }
-.pk-header { text-align: center; font-size: 36rpx; font-weight: bold; color: #FF6B35; margin-bottom: 24rpx; }
-.pk-card { background: #fff; border-radius: 16rpx; padding: 24rpx; margin-bottom: 16rpx; }
-.my-card { background: linear-gradient(135deg, #FF9F43, #F39C12); color: #fff; }
-.my-card .pk-card-title { color: #fff; }
-.pk-card-title { font-size: 26rpx; font-weight: bold; margin-bottom: 12rpx; color: #2D3436; }
+.pk-page { padding: 24rpx; background: var(--bg-page); min-height: 100vh; }
+.pk-header { text-align: center; font-size: 36rpx; font-weight: bold; color: var(--color-primary-dark); margin-bottom: 8rpx; }
+.pk-notice { text-align: center; font-size: var(--font-xs); color: var(--text-hint); margin-bottom: 20rpx; padding: 0 20rpx; }
+.pk-card { background: var(--bg-card); border-radius: 16rpx; padding: 24rpx; margin-bottom: 16rpx; }
+.my-card { background: linear-gradient(135deg, var(--color-primary), var(--color-primary)); color: var(--text-on-primary); }
+.my-card .pk-card-title { color: var(--text-on-primary); }
+.pk-card-title { font-size: 26rpx; font-weight: bold; margin-bottom: 12rpx; color: var(--text-primary); }
 .pk-stats { display: flex; gap: 24rpx; font-size: 28rpx; }
 .pk-vs { display: flex; align-items: center; justify-content: space-around; margin: 16rpx 0; }
 .pk-player { text-align: center; }
 .pk-score { font-size: 36rpx; font-weight: bold; display: block; }
-.pk-vs-text { font-size: 32rpx; font-weight: bold; color: #FF6B35; }
+.pk-vs-text { font-size: 32rpx; font-weight: bold; color: var(--color-primary-dark); }
 .pk-actions { display: flex; gap: 12rpx; margin-top: 16rpx; }
-.pk-start-btn { width: 80%; background: linear-gradient(135deg, #FF6B35, #F39C12); color: #fff; border-radius: 40rpx; font-size: 32rpx; font-weight: bold; padding: 20rpx; margin: 20rpx auto; }
+.pk-start-btn { width: 80%; background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)); color: var(--text-on-primary); border-radius: 40rpx; font-size: 32rpx; font-weight: bold; padding: 20rpx; margin: 20rpx auto; }
 .result-card { text-align: center; }
 .pk-result-text { font-size: 30rpx; font-weight: bold; display: block; margin-bottom: 8rpx; }
-.pk-result-score { font-size: 24rpx; color: #636E72; }
-.pk-history-item { display: flex; justify-content: space-between; padding: 12rpx 0; border-bottom: 1px solid #F0F0F0; font-size: 26rpx; }
+.pk-result-score { font-size: 24rpx; color: var(--text-secondary); }
+.pk-history-item { display: flex; justify-content: space-between; padding: 12rpx 0; border-bottom: 1px solid var(--border-color); font-size: 26rpx; }
 .pk-win { color: #2E7D32; font-weight: bold; }
-.pk-lose { color: #F39C12; font-weight: bold; }
+.pk-lose { color: var(--color-primary); font-weight: bold; }

@@ -1,2 +1,25 @@
-<!--subpkg-admin/pages/reviewQueue/reviewQueue.wxml-->
-<text>subpkg-admin/pages/reviewQueue/reviewQueue.wxml</text>
+<view class="container">
+  <view class="header">
+    <text>待审核题目: {{questions.length}} 道</text>
+    <button size="mini" type="primary" bindtap="batchApprove" wx:if="{{questions.length > 0}}">批量通过</button>
+  </view>
+
+  <scroll-view class="review-list" scroll-y>
+    <block wx:for="{{questions}}" wx:key="_id">
+      <view class="review-item">
+        <view class="r-stem">{{item.stem}}</view>
+        <view class="r-meta">
+          <text class="tag">{{item.subject}}</text>
+          <text class="tag">{{item.grade}}</text>
+          <text class="tag">{{item.type}}</text>
+          <text class="tag">{{item.difficulty}}</text>
+        </view>
+        <view class="r-actions">
+          <button size="mini" type="primary" bindtap="approve" data-id="{{item._id}}">通过</button>
+          <button size="mini" type="warn" bindtap="reject" data-id="{{item._id}}">拒绝</button>
+        </view>
+      </view>
+    </block>
+    <view wx:if="{{questions.length === 0 && !loading}}" class="empty">全部审核完毕</view>
+  </scroll-view>
+</view>

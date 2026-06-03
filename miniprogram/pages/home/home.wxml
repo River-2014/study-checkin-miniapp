@@ -11,8 +11,8 @@
   <!-- ===== 头部问候 ===== -->
   <view class="header-section">
     <view class="greeting">
-      <text class="greeting-text">{{greeting}}，小勇士！🔥</text>
-      <text class="sub-text">今天也要加油哦💪</text>
+      <text class="greeting-text">{{greeting}}，{{stageRole.icon}}{{stageRole.name}}！🔥</text>
+      <text class="sub-text">{{currentGradeLabel}} · {{currentStageLabel}}<text wx:if="{{transitionBonus}}"> · 🎉积分翻倍</text></text>
     </view>
     <view class="stars-badge">
       <text class="star-icon">⭐</text>
@@ -20,8 +20,14 @@
     </view>
   </view>
 
-  <!-- ===== 连续打卡卡片（4级火焰） ===== -->
-  <view class="card streak-card" style="border-left: 6rpx solid {{flameState === 'burning' ? '#FF9F43' : flameState === 'weakening' ? '#F39C12' : flameState === 'embers' ? '#E17055' : '#B2BEC3'}}">
+  <!-- ===== 考试倒计时（初中/高中） ===== -->
+  <view wx:if="{{showExamCountdown}}" class="card countdown-card">
+    <text class="countdown-label">{{examCountdownLabel}}</text>
+    <text class="countdown-days">{{examCountdownDays}} 天</text>
+  </view>
+
+  <!-- ===== 连续打卡卡片（小学版火焰动画，高中版不显示） ===== -->
+  <view wx:if="{{currentStage !== 'high'}}" class="card streak-card" style="border-left: 6rpx solid {{flameState === 'burning' ? '#FF9F43' : flameState === 'weakening' ? '#F39C12' : flameState === 'embers' ? '#E17055' : '#B2BEC3'}}">
     <view class="streak-left">
       <view class="fire-icon {{flameState === 'burning' ? 'fire-bounce' : ''}}">
         {{flameState === 'burning' ? '🔥' : flameState === 'weakening' ? '🕯️' : flameState === 'embers' ? '💨' : '❄️'}}
@@ -137,42 +143,27 @@
     </view>
   </view>
 
-  <!-- ===== 排行榜入口 ===== -->
-  <view class="card lb-entry-card" bindtap="goToLeaderboard" hover-class="task-hover">
-    <view class="lb-entry-inner">
-      <text class="lb-entry-icon">🏆</text>
-      <text class="lb-entry-text">排行榜</text>
-      <text class="lb-entry-arrow">›</text>
+  <!-- ===== 功能入口 2x2 网格 ===== -->
+  <view class="feature-grid">
+    <view class="feature-cell" bindtap="goToLeaderboard" hover-class="task-hover">
+      <text class="fc-icon">🏆</text>
+      <text class="fc-label">排行榜</text>
+    </view>
+    <view class="feature-cell" bindtap="goToPomodoro" hover-class="task-hover">
+      <text class="fc-icon">🍅</text>
+      <text class="fc-label">番茄钟</text>
+    </view>
+    <view class="feature-cell" bindtap="goToPK" hover-class="task-hover">
+      <text class="fc-icon">⚡</text>
+      <text class="fc-label">打卡PK</text>
+    </view>
+    <view class="feature-cell" bindtap="goToWeeklyReport" hover-class="task-hover">
+      <text class="fc-icon">📊</text>
+      <text class="fc-label">学习周报</text>
     </view>
   </view>
 
-  <!-- ===== 番茄钟入口 ===== -->
-  <view class="card lb-entry-card" bindtap="goToPomodoro" hover-class="task-hover">
-    <view class="lb-entry-inner">
-      <text class="lb-entry-icon">🍅</text>
-      <text class="lb-entry-text">番茄钟</text>
-      <text class="lb-entry-arrow">›</text>
-    </view>
-  </view>
-
-  <!-- 学习周报 + PK入口 -->
-  <view class="card lb-entry-card" bindtap="goToWeeklyReport" hover-class="task-hover">
-    <view class="lb-entry-inner">
-      <text class="lb-entry-icon">📊</text>
-      <text class="lb-entry-text">学习周报</text>
-      <text class="lb-entry-arrow">›</text>
-    </view>
-  </view>
-
-  <view class="card lb-entry-card" bindtap="goToPK" hover-class="task-hover">
-    <view class="lb-entry-inner">
-      <text class="lb-entry-icon">🔥</text>
-      <text class="lb-entry-text">打卡PK赛</text>
-      <text class="lb-entry-arrow">›</text>
-    </view>
-  </view>
-
-  <!-- ===== AI 出题入口 ===== -->
+  <!-- ===== AI 出题（核心入口） ===== -->
   <view class="card ai-exam-entry" bindtap="goToAI" hover-class="task-hover">
     <view class="ai-exam-entry-inner">
       <text class="ai-exam-icon">🧠</text>
@@ -184,70 +175,63 @@
     </view>
   </view>
 
-  <!-- ===== 题库练习入口 ===== -->
-  <view class="card ai-exam-entry" bindtap="goToLocalPractice" hover-class="task-hover">
-    <view class="ai-exam-entry-inner">
-      <text class="ai-exam-icon">📚</text>
-      <view class="ai-exam-entry-text">
-        <text class="ai-exam-entry-title">题库练习</text>
-        <text class="ai-exam-entry-desc">本地题库随机抽题 · 自动批改 · 收录错题</text>
-      </view>
-      <text class="ai-exam-arrow">›</text>
+  <!-- ===== 更多功能（折叠面板） ===== -->
+  <view class="fold-panel">
+    <view class="fold-header" bindtap="toggleFold">
+      <text class="fold-text">{{foldExpanded ? '收起更多功能 ▲' : '更多功能 ▼'}}</text>
     </view>
-  </view>
-
-  <!-- ===== 模拟考试入口 ===== -->
-  <view class="card ai-exam-entry" bindtap="goToPaperExam" hover-class="task-hover">
-    <view class="ai-exam-entry-inner">
-      <text class="ai-exam-icon">📝</text>
-      <view class="ai-exam-entry-text">
-        <text class="ai-exam-entry-title">模拟考试</text>
-        <text class="ai-exam-entry-desc">生成整卷 · 限时答题 · 成绩报告</text>
+    <view wx:if="{{foldExpanded}}" class="fold-body">
+      <view class="card sub-entry-card" bindtap="goToLocalPractice" hover-class="task-hover">
+        <view class="sub-entry-inner">
+          <text class="sub-entry-icon">📚</text>
+          <view class="sub-entry-text">
+            <text class="sub-entry-title">题库练习</text>
+            <text class="sub-entry-desc">本地题库随机抽题 · 自动批改</text>
+          </view>
+          <text class="sub-entry-arrow">›</text>
+        </view>
       </view>
-      <text class="ai-exam-arrow">›</text>
-    </view>
-  </view>
-
-  <!-- ===== 错题本入口 ===== -->
-  <view class="card wrongbook-entry" bindtap="goToWrongBook" hover-class="task-hover">
-    <view class="wrongbook-entry-inner">
-      <text class="wrongbook-icon">📖</text>
-      <view class="wrongbook-entry-text">
-        <text class="wrongbook-entry-title">错题本</text>
-        <text class="wrongbook-entry-desc">AI 练习错题自动收录 · 查看解析</text>
+      <view class="card sub-entry-card" bindtap="goToPaperExam" hover-class="task-hover">
+        <view class="sub-entry-inner">
+          <text class="sub-entry-icon">📝</text>
+          <view class="sub-entry-text">
+            <text class="sub-entry-title">模拟考试</text>
+            <text class="sub-entry-desc">生成整卷 · 限时答题 · 成绩报告</text>
+          </view>
+          <text class="sub-entry-arrow">›</text>
+        </view>
       </view>
-      <text class="wrongbook-entry-arrow">›</text>
-    </view>
-  </view>
 
-  <!-- ===== 成就徽章 ===== -->
-  <view class="card badge-section">
-    <view class="section-title">
-      <text>🏆 成就徽章</text>
-      <text class="badge-more" bindtap="goToBadges">查看全部 ›</text>
-    </view>
-    <scroll-view scroll-x class="badge-scroll" show-scrollbar="{{false}}" enable-flex>
-      <view wx:for="{{allBadges}}" wx:key="key" class="badge-item {{item.earned ? '' : 'badge-locked'}}">
-        <view class="badge-icon">{{item.earned ? item.emoji : '🔒'}}</view>
-        <text class="badge-name">{{item.earned ? item.name : '???'}}</text>
+      <!-- 成就徽章 -->
+      <view class="card badge-section">
+        <view class="section-title">
+          <text>🏆 成就徽章</text>
+          <text class="badge-more" bindtap="goToBadges">查看全部 ›</text>
+        </view>
+        <scroll-view scroll-x class="badge-scroll" show-scrollbar="{{false}}" enable-flex>
+          <view wx:for="{{allBadges}}" wx:key="key" class="badge-item {{item.earned ? '' : 'badge-locked'}}">
+            <view class="badge-icon">{{item.earned ? item.emoji : '🔒'}}</view>
+            <text class="badge-name">{{item.earned ? item.name : '???'}}</text>
+          </view>
+          <view wx:if="{{allBadges.length === 0}}" class="badge-empty">暂无徽章</view>
+        </scroll-view>
       </view>
-      <view wx:if="{{allBadges.length === 0}}" class="badge-empty">暂无徽章</view>
-    </scroll-view>
-  </view>
 
-  <!-- ===== 学习看板 ===== -->
-  <view class="card chart-section">
-    <view class="section-title">📊 近7天完成率</view>
-    <chart-bar data="{{chartData}}" options="{{chartOptions}}"></chart-bar>
-  </view>
+      <!-- 学习看板 -->
+      <view class="card chart-section">
+        <view class="section-title">📊 近7天完成率</view>
+        <chart-bar data="{{chartData}}" options="{{chartOptions}}"></chart-bar>
+      </view>
 
-  <!-- ===== AI 学习建议 ===== -->
-  <view class="card ai-section">
-    <view class="section-title">🤖 AI 学习小贴士</view>
-    <text wx:if="{{aiLoading}}" class="ai-loading">AI 正在思考中...</text>
-    <text wx:elif="{{aiAdvice}}" class="ai-advice">{{aiAdvice}}</text>
-    <text wx:else class="ai-empty">点击刷新获取个性化学习建议</text>
-    <button class="btn btn-small" style="margin-top: 16rpx; background: #F0F0F0; color: #636E72; width: fit-content;" bindtap="refreshAIReport" loading="{{aiLoading}}">🔄 刷新建议</button>
+      <!-- AI 学习建议 -->
+      <view class="card ai-section">
+        <view class="section-title">🤖 AI 学习小贴士</view>
+        <text wx:if="{{aiLoading}}" class="ai-loading">AI 正在思考中...</text>
+        <text wx:elif="{{aiAdvice}}" class="ai-advice">{{aiAdvice}}</text>
+        <text wx:else class="ai-empty">点击刷新获取个性化学习建议</text>
+        <button class="btn btn-small" style="margin-top: 16rpx; background: #F0F0F0; color: #636E72; width: fit-content;" bindtap="refreshAIReport" loading="{{aiLoading}}">🔄 刷新建议</button>
+      </view>
+    </view>
   </view>
 
   <!-- ===== 家长中心入口（仅家长模式显示） ===== -->
@@ -260,14 +244,6 @@
       </view>
       <text class="parent-entry-arrow">›</text>
     </view>
-  </view>
-
-  <!-- ===== 分享鼓励卡 ===== -->
-  <view class="card share-section">
-    <button class="btn btn-primary btn-block" bindtap="onShareCard">
-      🎉 生成鼓励卡
-    </button>
-    <canvas type="2d" id="shareCanvas" class="share-canvas-hidden"></canvas>
   </view>
 
   <!-- ===== 底部安全区 ===== -->

@@ -93,9 +93,6 @@ exports.main = async (event) => {
   headers['Authorization'] = authorization;
 
   console.log('Timestamp:', timestamp, 'Date:', date);
-  console.log('Payload:', payload);
-  console.log('CanonicalRequest:', canonicalRequest.replace(/\n/g, '\\n'));
-  console.log('Authorization:', authorization);
 
   return new Promise(function(resolve) {
     var options = {

@@ -1,10 +1,5 @@
 <view class="container">
-  <view class="tabs">
-    <view class="tab {{activeTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">📅 打卡明细</view>
-    <view class="tab {{activeTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">⭐ 积分流水</view>
-    <view class="tab {{activeTab === 2 ? 'active' : ''}}" bindtap="switchTab" data-index="2">🎁 兑换记录</view>
-    <view class="tab {{activeTab === 3 ? 'active' : ''}}" bindtap="switchTab" data-index="3">🤖 AI练习</view>
-  </view>
+  <tab-switch tabs="{{detailTabs}}" active="{{activeTab}}" bind:change="onTabChange"></tab-switch>
 
   <!-- 打卡明细 -->
   <scroll-view class="detail-list" scroll-y wx:if="{{activeTab === 0}}">

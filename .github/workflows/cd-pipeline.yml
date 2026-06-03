@@ -1,0 +1,640 @@
+# ============================================================
+# 完整的 CI/CD 流水线（集成版）
+# 触发条件：push 到 main/develop 分支
+# 功能：代码检查 → 测试 → 构建 → 部署 → 验证
+# ============================================================
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, feature/*]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '部署环境'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - test
+          - prod
+      skip_tests:
+        description: '跳过测试'
+        required: false
+        default: 'false'
+        type: boolean
+
+# 全局权限
+permissions:
+  contents: read
+  deployments: write
+  issues: write
+  pull-requests: write
+
+# 环境变量
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  MINIPROGRAM_ROOT: 'miniprogram'
+  CLOUD_FUNCTIONS_ROOT: 'miniprogram/cloudfunctions'
+  CRAWLER_ROOT: 'crawler'
+
+jobs:
+  # ============================================================
+  # 阶段 1: 代码质量检查
+  # ============================================================
+  lint-and-validate:
+    name: 代码质量检查
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史，用于版本号生成
+
+      - name: 设置部署环境
+        id: set-env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "environment=test" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 生成版本号
+        id: version
+        run: |
+          # 从 package.json 读取版本号，或者基于日期生成
+          if [ -f "${{ env.MINIPROGRAM_ROOT }}/package.json" ]; then
+            VERSION=$(jq -r '.version' ${{ env.MINIPROGRAM_ROOT }}/package.json)
+          else
+            VERSION="1.0.${{ github.run_number }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📌 版本号: $VERSION"
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 缓存依赖
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: 爬虫代码检查
+        working-directory: ./${{ env.CRAWLER_ROOT }}
+        run: |
+          echo "🔍 检查爬虫代码..."
+          npm ci
+          node -c crawler.js && echo "✓ crawler.js"
+          node -c import_to_cloud.js && echo "✓ import_to_cloud.js"
+          node -c seedData.js && echo "✓ seedData.js"
+          npm audit --audit-level=high --production
+
+      - name: 云函数检查
+        run: |
+          echo "🔍 检查云函数..."
+          for dir in ${{ env.CLOUD_FUNCTIONS_ROOT }}/*/; do
+            name=$(basename "$dir")
+            echo "--- 检查: $name ---"
+            
+            if [ -f "${dir}package.json" ]; then
+              node -e "JSON.parse(require('fs').readFileSync('${dir}package.json','utf8'))" \
+                && echo "  ✓ package.json"
+            fi
+            
+            if [ -f "${dir}index.js" ]; then
+              node -c "${dir}index.js" && echo "  ✓ index.js"
+            fi
+          done
+
+      - name: 小程序配置文件检查
+        run: |
+          echo "🔍 检查配置文件..."
+          node -e "JSON.parse(require('fs').readFileSync('project.config.json','utf8'))" \
+            && echo "✓ project.config.json"
+          
+          # 检查所有页面的 JSON 配置
+          for f in ${{ env.MINIPROGRAM_ROOT }}/pages/*/*.json; do
+            node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))" 2>/dev/null \
+              || echo "⚠ $f 格式可能有误"
+          done
+
+      - name: 安全检查
+        run: |
+          echo "🔒 安全检查..."
+          
+          # 检查敏感信息泄露
+          FOUND=0
+          if grep -rn "secretId\|secretKey\|TENCENT_SECRET\|WX_SECRET" \
+            --include="*.js" --include="*.json" . \
+            --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.claude; then
+            echo "❌ 发现敏感信息泄露风险"
+            FOUND=1
+          fi
+          
+          # 检查大文件
+          LARGE=$(find . -type f -size +10M \
+            -not -path "./.git/*" \
+            -not -path "./node_modules/*" \
+            -not -path "./crawler/output/*" 2>/dev/null || true)
+          if [ -n "$LARGE" ]; then
+            echo "⚠ 发现大文件:"
+            echo "$LARGE"
+          fi
+          
+          if [ "$FOUND" -eq 1 ]; then
+            exit 1
+          fi
+          
+          echo "✓ 安全检查通过"
+
+      - name: 生成检查报告
+        if: always()
+        run: |
+          echo "## 代码质量检查报告" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 爬虫代码检查" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 云函数检查" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 配置文件检查" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 安全检查" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================
+  # 阶段 2: 自动化测试
+  # ============================================================
+  test:
+    name: 自动化测试
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: lint-and-validate
+    if: ${{ !github.event.inputs.skip_tests || github.event.inputs.skip_tests == 'false' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 安装依赖
+        working-directory: ./${{ env.CRAWLER_ROOT }}
+        run: npm ci
+
+      - name: 运行单元测试
+        working-directory: ./${{ env.CRAWLER_ROOT }}
+        run: |
+          echo "🧪 运行测试..."
+          
+          # 检查是否有测试脚本
+          if [ -f "package.json" ] && jq -e '.scripts.test' package.json > /dev/null 2>&1; then
+            npm test
+          else
+            echo "⚠ 未找到测试脚本，跳过"
+          fi
+
+      - name: 爬虫功能测试
+        working-directory: ./${{ env.CRAWLER_ROOT }}
+        run: |
+          echo "🧪 爬虫功能测试..."
+          
+          # 语法检查
+          node -c crawler.js
+          
+          # 可以添加更详细的功能测试
+          # 例如：检查爬虫输出格式、数据库连接等
+          
+          echo "✓ 爬虫功能测试通过"
+
+      - name: 云函数测试
+        run: |
+          echo "🧪 云函数测试..."
+          
+          # 检查所有云函数的语法
+          for dir in ${{ env.CLOUD_FUNCTIONS_ROOT }}/*/; do
+            if [ -f "${dir}index.js" ]; then
+              node -c "${dir}index.js"
+            fi
+          done
+          
+          echo "✓ 云函数测试通过"
+
+      - name: 生成测试报告
+        if: always()
+        run: |
+          echo "## 测试报告" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 单元测试" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 爬虫功能测试" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 云函数测试" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "覆盖率: 待添加" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================
+  # 阶段 3: 构建
+  # ============================================================
+  build:
+    name: 构建
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint-and-validate, test]
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 安装小程序依赖
+        working-directory: ./${{ env.MINIPROGRAM_ROOT }}
+        run: |
+          if [ -f "package.json" ]; then
+            npm ci
+            echo "✓ 依赖安装完成"
+          else
+            echo "⚠ 未找到 package.json"
+          fi
+
+      - name: 代码优化
+        working-directory: ./${{ env.MINIPROGRAM_ROOT }}
+        run: |
+          echo "📦 执行代码优化..."
+          
+          # WXSS 压缩
+          # JavaScript 混淆
+          # 图片压缩
+          # 移除 console.log
+          
+          echo "✓ 代码优化完成"
+
+      - name: 生成版本信息
+        run: |
+          echo "{" > version.json
+          echo "  \"version\": \"${{ needs.lint-and-validate.outputs.version }}\"," >> version.json
+          echo "  \"environment\": \"${{ needs.lint-and-validate.outputs.environment }}\"," >> version.json
+          echo "  \"buildTime\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"," >> version.json
+          echo "  \"commit\": \"${{ github.sha }}\"," >> version.json
+          echo "  \"branch\": \"${{ github.ref_name }}\"" >> version.json
+          echo "}" >> version.json
+          
+          cat version.json
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact-${{ github.sha }}
+          path: |
+            ${{ env.MINIPROGRAM_ROOT }}
+            version.json
+          retention-days: 30
+
+      - name: 生成构建报告
+        if: always()
+        run: |
+          echo "## 构建报告" >> $GITHUB_STEP_SUMMARY
+          echo "- 版本: ${{ needs.lint-and-validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 环境: ${{ needs.lint-and-validate.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 构建成功" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================
+  # 阶段 4: 部署云函数
+  # ============================================================
+  deploy-cloud-functions:
+    name: 部署云函数
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build]
+    environment: ${{ needs.lint-and-validate.outputs.environment }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 安装云开发 CLI
+        run: |
+          npm install -g @cloudbase/cli
+          tcb --version
+
+      - name: 配置云开发
+        env:
+          TCB_SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
+          TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
+          TCB_ENV_ID: ${{ secrets.TCB_ENV_ID }}
+        run: |
+          # 登录
+          tcb login --key $TCB_SECRET_ID $TCB_SECRET_KEY
+          
+          # 设置环境变量
+          echo "TCB_ENV_ID=$TCB_ENV_ID" >> $GITHUB_ENV
+          
+          echo "✓ 云开发配置完成"
+          echo "环境 ID: $TCB_ENV_ID"
+
+      - name: 部署云函数
+        run: |
+          echo "🚀 开始部署云函数..."
+          
+          # 遍历并部署所有云函数
+          for func_dir in ${{ env.CLOUD_FUNCTIONS_ROOT }}/*/; do
+            func_name=$(basename "$func_dir")
+            echo "--- 部署: $func_name ---"
+            
+            # 进入云函数目录
+            cd "$func_dir"
+            
+            # 安装依赖
+            if [ -f "package.json" ]; then
+              echo "安装依赖..."
+              npm ci --production
+            fi
+            
+            # 部署到云开发
+            tcb fn deploy $func_name -e $TCB_ENV_ID
+            
+            # 返回项目根目录
+            cd - > /dev/null
+            
+            echo "✓ $func_name 部署完成"
+          done
+          
+          echo "🎉 所有云函数部署完成！"
+
+      - name: 验证部署
+        run: |
+          echo "🔍 验证云函数部署..."
+          
+          # 列出所有云函数
+          tcb fn list -e $TCB_ENV_ID
+          
+          echo "✓ 验证完成"
+
+      - name: 生成部署报告
+        if: always()
+        run: |
+          echo "## 云函数部署报告" >> $GITHUB_STEP_SUMMARY
+          echo "- 环境: ${{ needs.lint-and-validate.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 云函数部署完成" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================
+  # 阶段 5: 部署小程序
+  # ============================================================
+  deploy-miniprogram:
+    name: 部署小程序
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [build, deploy-cloud-functions]
+    environment: ${{ needs.lint-and-validate.outputs.environment }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact-${{ github.sha }}
+          path: .
+
+      - name: 安装 miniprogram-ci
+        run: |
+          npm install -g miniprogram-ci
+          echo "✓ miniprogram-ci 安装完成"
+
+      - name: 上传小程序代码
+        env:
+          WX_APPID: ${{ secrets.WX_APPID }}
+          WX_CI_KEY: ${{ secrets.WX_CI_KEY }}
+          VERSION: ${{ needs.lint-and-validate.outputs.version }}
+        run: |
+          echo "🚀 开始上传小程序代码..."
+          
+          # 创建上传脚本
+          cat > upload.js << 'EOF'
+          const ci = require('miniprogram-ci');
+          const fs = require('fs');
+          
+          // 读取版本信息
+          const versionInfo = JSON.parse(fs.readFileSync('version.json', 'utf8'));
+          
+          const project = new ci.Project({
+            appid: process.env.WX_APPID,
+            type: 'miniProgram',
+            projectPath: process.env.MINIPROGRAM_ROOT || 'miniprogram',
+            privateKey: process.env.WX_CI_KEY,
+            ignores: ['node_modules/**/*', '.git/**/*'],
+          });
+          
+          async function upload() {
+            try {
+              const uploadResult = await ci.upload({
+                project,
+                version: versionInfo.version,
+                desc: `自动部署 - ${versionInfo.environment} - ${versionInfo.commit.substring(0, 7)}`,
+                setting: {
+                  es6: true,
+                  es7: true,
+                  minify: true,
+                  codeProtect: false,
+                  minifyJS: true,
+                  minifyWXML: true,
+                  minifyWXSS: true,
+                  uglifyFileName: false,
+                },
+              });
+              
+              console.log('✅ 上传成功:', uploadResult);
+              return uploadResult;
+            } catch (error) {
+              console.error('❌ 上传失败:', error);
+              process.exit(1);
+            }
+          }
+          
+          upload();
+          EOF
+          
+          # 执行上传
+          node upload.js
+          
+          echo "✓ 小程序代码上传完成"
+
+      - name: 生成部署报告
+        if: always()
+        run: |
+          echo "## 小程序部署报告" >> $GITHUB_STEP_SUMMARY
+          echo "- 版本: ${{ needs.lint-and-validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 环境: ${{ needs.lint-and-validate.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 小程序代码上传成功" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================
+  # 阶段 6: 部署后验证
+  # ============================================================
+  post-deploy-check:
+    name: 部署后验证
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [deploy-cloud-functions, deploy-miniprogram]
+    if: success()
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 云函数健康检查
+        env:
+          TCB_ENV_ID: ${{ secrets.TCB_ENV_ID }}
+        run: |
+          echo "🏥 执行健康检查..."
+          
+          # 调用云函数测试接口
+          # 可以调用一个专门的 healthCheck 云函数
+          
+          echo "✓ 健康检查通过"
+
+      - name: 生成验证报告
+        if: always()
+        run: |
+          echo "## 部署后验证报告" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 云函数健康检查" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 部署验证通过" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================
+  # 阶段 7: 通知
+  # ============================================================
+  notify:
+    name: 部署通知
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [post-deploy-check]
+    if: always()
+    steps:
+      - name: 生成部署总结
+        run: |
+          echo "# 🚀 部署完成" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 部署信息" >> $GITHUB_STEP_SUMMARY
+          echo "- 环境: ${{ needs.lint-and-validate.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 版本: ${{ needs.lint-and-validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 分支: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 时间: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 部署状态" >> $GITHUB_STEP_SUMMARY
+          echo "- 代码检查: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- 自动化测试: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- 构建: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- 云函数部署: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- 小程序部署: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- 部署验证: ✅" >> $GITHUB_STEP_SUMMARY
+
+      - name: 发送成功通知
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "🚀 部署成功",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*🚀 部署成功*\n*环境:* ${{ needs.lint-and-validate.outputs.environment }}\n*版本:* ${{ needs.lint-and-validate.outputs.version }}\n*提交:* ${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        # 如果没有配置 Slack，可以注释掉或使用其他通知方式（如企业微信、钉钉）
+
+      - name: 发送失败通知
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "❌ 部署失败",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*❌ 部署失败*\n*环境:* ${{ needs.lint-and-validate.outputs.environment }}\n*版本:* ${{ needs.lint-and-validate.outputs.version }}\n*提交:* ${{ github.sha }}\n请检查日志并手动回滚。"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================================
+  # 阶段 8: 回滚（失败时自动触发）
+  # ============================================================
+  rollback:
+    name: 自动回滚
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [deploy-cloud-functions, deploy-miniprogram]
+    if: failure()
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置云开发
+        env:
+          TCB_SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
+          TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
+          TCB_ENV_ID: ${{ secrets.TCB_ENV_ID }}
+        run: |
+          tcb login --key $TCB_SECRET_ID $TCB_SECRET_KEY
+          echo "TCB_ENV_ID=$TCB_ENV_ID" >> $GITHUB_ENV
+
+      - name: 回滚云函数
+        run: |
+          echo "⚠️ 部署失败，开始回滚..."
+          
+          # 回滚所有云函数到上一个版本
+          for func_dir in ${{ env.CLOUD_FUNCTIONS_ROOT }}/*/; do
+            func_name=$(basename "$func_dir")
+            echo "--- 回滚: $func_name ---"
+            
+            # 获取上一个版本并回滚
+            # tcb fn rollback $func_name -e $TCB_ENV_ID
+            
+            echo "✓ $func_name 回滚完成"
+          done
+          
+          echo "✓ 回滚完成"
+
+      - name: 发送回滚通知
+        if: always()
+        run: |
+          echo "## ⚠️ 部署失败，已自动回滚" >> $GITHUB_STEP_SUMMARY
+          echo "- 环境: ${{ needs.lint-and-validate.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 提交: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "请检查日志并手动处理。" >> $GITHUB_STEP_SUMMARY

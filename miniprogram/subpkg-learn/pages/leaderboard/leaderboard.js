@@ -2,7 +2,8 @@ var storage = require('../../utils/storage');
 
 Page({
   data: {
-    tab: 0,  // 0=连续打卡, 1=周积分
+    tab: 0,
+    lbTabs: [{ label: '🔥 连续打卡' }, { label: '⭐ 累计积分' }],
     streakList: [],
     starsList: [],
     currentList: [],
@@ -40,7 +41,6 @@ Page({
           var data = storage.getAppData();
           data.user.leaderboardOptIn = false;
           storage.saveAppData(data);
-          wx.getStorageSync('appData');
           this.setData({ optedIn: false });
           this.loadRankings();
         }
@@ -105,8 +105,8 @@ Page({
     };
   },
 
-  switchTab: function(e) {
-    var idx = Number(e.currentTarget.dataset.index);
+  onTabChange: function(e) {
+    var idx = e.detail.index;
     this.setData({
       tab: idx,
       currentList: idx === 0 ? this.data.streakList : this.data.starsList

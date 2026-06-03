@@ -1,6 +1,6 @@
 <view class="container">
-  <view class="title">请选择你的身份</view>
-  <view class="subtitle">选择后可在「我的」页面随时切换</view>
+  <view class="title">选择你的身份和年级</view>
+  <view class="subtitle">选择后可在「我的」页面随时修改</view>
 
   <view class="role-card" bindtap="selectRole" data-role="student">
     <text class="role-emoji">👦</text>
@@ -18,5 +18,17 @@
       <text class="role-desc">查看数据明细 · 管理任务和奖励</text>
     </view>
     <text class="role-arrow">›</text>
+  </view>
+
+  <!-- 年级选择 -->
+  <view class="grade-section">
+    <view class="grade-title">📚 当前年级</view>
+    <picker mode="selector" range="{{gradeLabels}}" value="{{gradeIndex}}" bindchange="onGradeChange">
+      <view class="grade-picker">
+        <text class="grade-value">{{gradeLabels[gradeIndex]}}</text>
+        <text class="grade-arrow">▼</text>
+      </view>
+    </picker>
+    <text class="grade-hint">根据年级自动匹配学科和任务内容</text>
   </view>
 </view>

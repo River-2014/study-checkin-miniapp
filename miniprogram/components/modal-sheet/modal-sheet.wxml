@@ -1,0 +1,9 @@
+<view wx:if="{{show}}" class="modal-overlay" bindtap="onClose">
+  <view class="modal-content" catchtap="stopPropagation">
+    <text wx:if="{{title}}" class="modal-title">{{title}}</text>
+    <slot></slot>
+  </view>
+  <view wx:if="{{$slots.actions}}" class="modal-actions" catchtap="stopPropagation">
+    <slot name="actions"></slot>
+  </view>
+</view>

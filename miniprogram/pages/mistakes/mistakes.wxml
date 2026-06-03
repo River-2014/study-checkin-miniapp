@@ -37,9 +37,7 @@
 </view>
 
 <!-- ===== 复习弹窗 ===== -->
-<view wx:if="{{showReview}}" class="modal-overlay" bindtap="closeReview">
-  <view class="review-content" catchtap="stopPropagation">
-    <text class="review-title">📖 错题复习</text>
+<modal-sheet show="{{showReview}}" title="📖 错题复习" bind:close="closeReview">
     <swiper current="{{reviewIndex}}" duration="300" class="review-swiper" bindchange="onSwiperChange">
       <swiper-item wx:for="{{reviewList}}" wx:key="id">
         <view class="review-card-inner">
@@ -56,5 +54,4 @@
       <button class="btn btn-success btn-small" bindtap="onReviewDone">✅ 复习完成 +2⭐</button>
       <button class="btn btn-small" style="background: #F0F0F0; color: #636E72; margin-top: 16rpx;" bindtap="closeReview">关闭</button>
     </view>
-  </view>
-</view>
+</modal-sheet>

@@ -1,9 +1,5 @@
 <view class="family-page">
-  <!-- TAB 切换 -->
-  <view class="tab-bar">
-    <view class="tab-item {{tabIndex === 0 ? 'tab-active' : ''}}" data-index="0" bindtap="switchTab">家庭管理</view>
-    <view class="tab-item {{tabIndex === 1 ? 'tab-active' : ''}}" data-index="1" bindtap="switchTab">亲子契约</view>
-  </view>
+  <tab-switch tabs="{{familyTabs}}" active="{{tabIndex}}" bind:change="onTabChange"></tab-switch>
 
   <!-- === TAB 0: 家庭管理 === -->
   <block wx:if="{{tabIndex === 0}}">

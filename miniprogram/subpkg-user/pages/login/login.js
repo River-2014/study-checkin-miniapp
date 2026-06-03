@@ -1,4 +1,5 @@
 var account = require('../../utils/account');
+var storage = require('../../utils/storage');
 
 Page({
   data: {
@@ -10,8 +11,13 @@ Page({
     that.setData({ loading: true });
     account.login().then(function(result) {
       that.setData({ loading: false });
-      // 登录成功，跳转首页
-      wx.switchTab({ url: '/pages/home/home' });
+      // 首次登录 → 选择身份；已选过 → 直接回首页
+      var appData = storage.getAppData();
+      if (!appData.userMode) {
+        wx.redirectTo({ url: '/subpkg-user/pages/role/role' });
+      } else {
+        wx.switchTab({ url: '/pages/home/home' });
+      }
     }).catch(function(err) {
       that.setData({ loading: false });
       wx.showModal({

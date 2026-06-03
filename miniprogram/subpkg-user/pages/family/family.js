@@ -11,7 +11,8 @@ Page({
     contracts: [],
     pendingRedeems: [],
     templates: storage.CONTRACT_TEMPLATES || [],
-    tabIndex: 0  // 0=家庭, 1=契约
+    tabIndex: 0,
+    familyTabs: [{ label: '👨‍👩‍👧 家庭管理' }, { label: '📜 亲子契约' }]
   },
 
   onShow: function() {
@@ -20,9 +21,8 @@ Page({
     this.loadContracts();
   },
 
-  switchTab: function(e) {
-    var i = Number(e.currentTarget.dataset.index);
-    this.setData({ tabIndex: i });
+  onTabChange: function(e) {
+    this.setData({ tabIndex: e.detail.index });
   },
 
   /** 加载契约列表 */

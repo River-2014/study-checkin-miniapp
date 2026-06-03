@@ -2,8 +2,8 @@ var helper = require('../../utils/practiceHelper');
 
 Page({
   data: {
-    // TAB: 0=题库管理, 1=试卷管理
     tabIndex: 0,
+    adminTabs: [{ label: '📋 题库管理' }, { label: '📝 试卷管理' }],
 
     // 题库管理
     subjects: helper.SUBJECTS,
@@ -64,13 +64,12 @@ Page({
   },
 
   // ===== 新页面入口 =====
-  goQuestionManage: function() { wx.navigateTo({ url: '/subpkg-admin/pages/admin/questionManage/questionManage' }); },
-  goStats: function() { wx.navigateTo({ url: '/subpkg-admin/pages/admin/stats/stats' }); },
-  goReviewQueue: function() { wx.navigateTo({ url: '/subpkg-admin/pages/admin/reviewQueue/reviewQueue' }); },
+  goQuestionManage: function() { wx.navigateTo({ url: '/subpkg-admin/pages/questionManage/questionManage' }); },
+  goStats: function() { wx.navigateTo({ url: '/subpkg-admin/pages/stats/stats' }); },
+  goReviewQueue: function() { wx.navigateTo({ url: '/subpkg-admin/pages/reviewQueue/reviewQueue' }); },
 
-  // ===== TAB 切换 =====
-  switchTab: function(e) {
-    var idx = Number(e.currentTarget.dataset.index);
+  onTabChange: function(e) {
+    var idx = e.detail.index;
     this.setData({ tabIndex: idx });
     if (idx === 0) {
       this.loadStats();

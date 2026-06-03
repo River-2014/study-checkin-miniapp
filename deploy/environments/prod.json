@@ -1,0 +1,22 @@
+{
+  "name": "生产环境",
+  "envId": "cloud1-d8geyz0ynb367e0bf",
+  "appId": "wx8d568fc6b9fbad1f",
+  "description": "生产环境配置，正式对外发布",
+  "cloudbase": {
+    "envId": "cloud1-d8geyz0ynb367e0bf",
+    "region": "ap-shanghai"
+  },
+  "miniprogram": {
+    "appId": "wx8d568fc6b9fbad1f",
+    "es6": true,
+    "es7": true,
+    "minify": true,
+    "urlCheck": true
+  },
+  "features": {
+    "enableDebug": false,
+    "enableLog": false,
+    "mockData": false
+  }
+}

@@ -69,8 +69,7 @@ exports.main = async (event) => {
       return { success: false, error: { code: 'NO_API_KEY', message: 'AI 未配置，请在云函数环境变量中设置 AI_API_KEY' } };
     }
     try {
-      var targetUrl = event.url || API_URL;
-      var response = await request(targetUrl, {
+      var response = await request(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

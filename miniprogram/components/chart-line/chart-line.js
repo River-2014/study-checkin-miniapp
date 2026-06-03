@@ -41,14 +41,15 @@ Component({
         canvas.height = height * dpr;
         ctx.scale(dpr, dpr);
 
+        var options = that.data.options || {};
         var opt = {
           width: width,
           height: height,
-          padding: that.data.options.padding,
-          lineColor: that.data.options.lineColor,
-          fillColor: that.data.options.fillColor,
-          showDots: that.data.options.showDots !== false,
-          smooth: that.data.options.smooth !== false
+          padding: options.padding,
+          lineColor: options.lineColor,
+          fillColor: options.fillColor,
+          showDots: options.showDots !== false,
+          smooth: options.smooth !== false
         };
 
         lineChart.drawLineChart(canvas, ctx, that.data.data, opt);

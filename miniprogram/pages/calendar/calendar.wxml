@@ -1,4 +1,10 @@
 <view class="calendar-page">
+  <!-- 骨架屏 -->
+  <view wx:if="{{!loaded}}" class="skeleton-wrap">
+    <view class="sk-shimmer" style="height: 60rpx; border-radius: var(--radius-md); margin-bottom: 16rpx;"></view>
+    <view class="sk-shimmer" style="height: 400rpx; border-radius: var(--radius-xl);"></view>
+  </view>
+
   <!-- ===== 月份导航 ===== -->
   <view class="month-nav">
     <text class="nav-arrow" bindtap="prevMonth">◀</text>

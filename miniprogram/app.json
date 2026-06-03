@@ -51,16 +51,21 @@
   "preloadRule": {
     "pages/home/home": {
       "network": "all",
-      "packages": ["learn", "user"]
+      "packages": [
+        "learn",
+        "user"
+      ]
     },
     "pages/mine/mine": {
       "network": "all",
-      "packages": ["user"]
+      "packages": [
+        "user"
+      ]
     }
   },
   "__usePrivacyCheck__": true,
   "window": {
-    "navigationBarTitleText": "小升初冲刺打卡",
+    "navigationBarTitleText": "成长刻度",
     "navigationBarTextStyle": "white",
     "navigationBarBackgroundColor": "#FF9F43",
     "backgroundColor": "#FFF8E7"
@@ -80,26 +85,26 @@
       {
         "pagePath": "pages/calendar/calendar",
         "text": "日历",
-        "iconPath": "images/stats.png",
-        "selectedIconPath": "images/stats_active.png"
+        "iconPath": "images/calendar.png",
+        "selectedIconPath": "images/calendar_active.png"
       },
       {
         "pagePath": "pages/rewards/rewards",
         "text": "商城",
-        "iconPath": "images/profile.png",
-        "selectedIconPath": "images/profile_active.png"
+        "iconPath": "images/rewards.png",
+        "selectedIconPath": "images/rewards_active.png"
       },
       {
         "pagePath": "pages/mistakes/mistakes",
         "text": "错题本",
-        "iconPath": "images/stats.png",
-        "selectedIconPath": "images/stats_active.png"
+        "iconPath": "images/mistakes.png",
+        "selectedIconPath": "images/mistakes_active.png"
       },
       {
         "pagePath": "pages/mine/mine",
         "text": "我的",
-        "iconPath": "images/profile.png",
-        "selectedIconPath": "images/profile_active.png"
+        "iconPath": "images/mine.png",
+        "selectedIconPath": "images/mine_active.png"
       }
     ]
   },

@@ -7,15 +7,7 @@
     <button class="nav-btn" bindtap="goReviewQueue">审核队列</button>
   </view>
 
-  <!-- TAB 切换 -->
-  <view class="tab-bar">
-    <view class="tab-item {{tabIndex === 0 ? 'tab-active' : ''}}" data-index="0" bindtap="switchTab">
-      题库管理
-    </view>
-    <view class="tab-item {{tabIndex === 1 ? 'tab-active' : ''}}" data-index="1" bindtap="switchTab">
-      试卷管理
-    </view>
-  </view>
+  <tab-switch tabs="{{adminTabs}}" active="{{tabIndex}}" bind:change="onTabChange"></tab-switch>
 
   <!-- ==========================================
        题库管理 TAB
@@ -263,7 +255,7 @@
       <!-- 试卷卡片列表 -->
       <view wx:if="{{paperList.length === 0 && !paperListLoading}}" class="empty-hint">暂无试卷</view>
 
-      <view wx:for="{{paperList}}" wx:key="_id" class="paper-card">
+      <view wx:for="{{paperList}}" wx:key="_id" class="card card--compact paper-card">
         <view class="paper-card-head">
           <text class="paper-title">{{item.title}}</text>
           <text class="paper-status status-{{item.status}}">{{item.status === 'metadata_only' ? '仅元数据' : item.status === 'active' ? '可用' : '草稿'}}</text>

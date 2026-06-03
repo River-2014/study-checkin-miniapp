@@ -103,6 +103,13 @@ async function insertQuestions(questions) {
 // ========== 主入口 ==========
 
 exports.main = async function(event) {
+  // 管理员鉴权
+  var { OPENID } = cloud.getWXContext();
+  var adminDoc = await db.collection('admins').where({ _openid: OPENID }).get();
+  if (!adminDoc.data || adminDoc.data.length === 0) {
+    return { success: false, error: '无权限' };
+  }
+
   var subject = event.subject || '数学';
   var grade = event.grade || '六年级';
   var customUrl = event.customUrl || '';
@@ -112,6 +119,17 @@ exports.main = async function(event) {
   var allQuestions = [];
 
   if (customUrl) {
+    // SSRF防护：校验URL仅允许公网域名
+    var urlCheck;
+    try { urlCheck = new (require('url').URL)(customUrl); } catch(e) { return { success: false, error: 'URL格式无效' }; }
+    var hostname = urlCheck.hostname;
+    var blocked = ['127.0.0.1','localhost','169.254.169.254','metadata.google.internal','0.0.0.0','[::1]'];
+    if (blocked.indexOf(hostname) !== -1 || hostname.match(/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/)) {
+      return { success: false, error: '不允许访问内网地址' };
+    }
+    if (urlCheck.protocol !== 'http:' && urlCheck.protocol !== 'https:') {
+      return { success: false, error: '仅支持http/https协议' };
+    }
     try {
       var html = await httpGet(customUrl);
       allQuestions = extractQuestions(html, subject, grade, selector);

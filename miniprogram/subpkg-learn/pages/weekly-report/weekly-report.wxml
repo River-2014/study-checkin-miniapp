@@ -13,14 +13,14 @@
 
   <view class="wr-highlight">{{highlight}}</view>
 
-  <view class="wr-card">
+  <view class="card card--compact">
     <view class="wr-card-title">每日打卡完成度</view>
-    <chart-bar data="{{dailyChart}}" options="{{}}"></chart-bar>
+    <chart-bar data="{{dailyChart}}"></chart-bar>
   </view>
 
-  <view class="wr-card">
+  <view class="card card--compact">
     <view class="wr-card-title">学科分布</view>
-    <chart-bar data="{{subjectChart}}" options="{{}}"></chart-bar>
+    <chart-bar data="{{subjectChart}}"></chart-bar>
   </view>
 
   <view class="wr-meta">

@@ -1,65 +1,65 @@
 .family-page {
   min-height: 100vh;
-  background: #FFF8E7;
+  background: var(--bg-page);
   padding: 30rpx;
 }
 .family-card {
-  background: #FFFFFF;
+  background: var(--bg-card);
   border-radius: 24rpx;
   padding: 30rpx;
   margin-bottom: 30rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+  box-shadow: 0 4rpx 16rpx var(--bg-overlay);
 }
 .family-section-title {
   font-size: 30rpx;
   font-weight: bold;
-  color: #2D3436;
+  color: var(--text-primary);
   margin-bottom: 24rpx;
 }
 .family-code-area {
   text-align: center;
   padding: 30rpx;
-  background: #FFF8E7;
+  background: var(--bg-page);
   border-radius: 16rpx;
   margin-bottom: 20rpx;
 }
 .family-code-label {
   font-size: 24rpx;
-  color: #636E72;
+  color: var(--text-secondary);
   display: block;
   margin-bottom: 12rpx;
 }
 .family-code-value {
-  font-size: 48rpx;
+  font-size: var(--font-xxl);
   font-weight: bold;
-  color: #FF9F43;
+  color: var(--color-primary);
   letter-spacing: 8rpx;
   display: block;
   margin-bottom: 12rpx;
 }
 .family-code-hint {
-  font-size: 22rpx;
-  color: #B2BEC3;
+  font-size: var(--font-xs);
+  color: var(--text-hint);
   display: block;
 }
 .btn-primary {
-  background: #FF9F43;
-  color: #FFFFFF;
-  font-size: 28rpx;
+  background: var(--color-primary);
+  color: var(--text-on-primary);
+  font-size: var(--font-md);
   padding: 20rpx 0;
   border-radius: 50rpx;
   width: 100%;
   text-align: center;
 }
 .btn-outline {
-  background: #FFFFFF;
-  color: #FF9F43;
-  font-size: 28rpx;
+  background: var(--bg-card);
+  color: var(--color-primary);
+  font-size: var(--font-md);
   padding: 20rpx 0;
   border-radius: 50rpx;
   width: 100%;
   text-align: center;
-  border: 2rpx solid #FF9F43;
+  border: 2rpx solid var(--color-primary);
   margin-top: 20rpx;
 }
 .btn-outline[disabled] {
@@ -67,13 +67,13 @@
 }
 .family-divider {
   height: 2rpx;
-  background: #F0F0F0;
+  background: var(--border-color);
   margin: 30rpx 0;
 }
 .family-empty {
   text-align: center;
-  color: #B2BEC3;
-  font-size: 26rpx;
+  color: var(--text-hint);
+  font-size: var(--font-sm);
   padding: 40rpx 0;
 }
 .family-member-item {
@@ -86,7 +86,7 @@
   border-bottom: none;
 }
 .member-avatar {
-  font-size: 48rpx;
+  font-size: var(--font-xxl);
   margin-right: 20rpx;
   width: 60rpx;
   height: 60rpx;
@@ -98,53 +98,30 @@
   flex: 1;
 }
 .member-name {
-  font-size: 28rpx;
-  color: #2D3436;
+  font-size: var(--font-md);
+  color: var(--text-primary);
   font-weight: 500;
 }
 .family-code-input {
-  background: #F8F8F8;
+  background: var(--bg-gray);
   border-radius: 12rpx;
   padding: 20rpx 24rpx;
-  font-size: 28rpx;
+  font-size: var(--font-md);
   text-align: center;
   letter-spacing: 12rpx;
-}
-
-/* ===== TAB 切换 ===== */
-.tab-bar {
-  display: flex;
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 6rpx;
-  margin-bottom: 24rpx;
-}
-.tab-item {
-  flex: 1;
-  text-align: center;
-  padding: 16rpx 0;
-  font-size: 28rpx;
-  color: #636E72;
-  border-radius: 12rpx;
-  transition: all 0.3s;
-}
-.tab-active {
-  background: #FF9F43;
-  color: #fff;
-  font-weight: bold;
 }
 
 /* ===== 契约模板 ===== */
 .contract-tpl-list { display: flex; flex-direction: column; gap: 12rpx; }
 .contract-tpl-item {
   display: flex; align-items: center; padding: 16rpx 20rpx;
-  background: #F8F8F8; border-radius: 12rpx;
+  background: var(--bg-gray); border-radius: 12rpx;
 }
-.contract-tpl-item:active { background: #F0E6FF; }
+.contract-tpl-item:active { background: var(--color-accent-light); }
 .tpl-left { flex: 1; }
-.tpl-title { font-size: 28rpx; color: #2D3436; font-weight: 500; display: block; }
-.tpl-desc { font-size: 22rpx; color: #B2BEC3; }
-.tpl-arrow { font-size: 32rpx; color: #6C5CE7; font-weight: bold; }
+.tpl-title { font-size: var(--font-md); color: var(--text-primary); font-weight: 500; display: block; }
+.tpl-desc { font-size: var(--font-xs); color: var(--text-hint); }
+.tpl-arrow { font-size: var(--font-lg); color: var(--color-primary); font-weight: bold; }
 
 /* ===== 契约列表项 ===== */
 .contract-item {
@@ -153,19 +130,19 @@
 }
 .contract-item:last-child { border-bottom: none; }
 .ct-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8rpx; }
-.ct-title { font-size: 28rpx; font-weight: 500; color: #2D3436; }
-.ct-status { font-size: 22rpx; padding: 4rpx 12rpx; border-radius: 12rpx; }
-.ct-pending { background: #FFF8E1; color: #F39C12; }
-.ct-active { background: #E8F5E9; color: #2E7D32; }
-.ct-completed { background: #F0E6FF; color: #6C5CE7; }
-.ct-rejected { background: #FFEBEE; color: #C62828; }
-.ct-body { display: flex; justify-content: space-between; font-size: 24rpx; color: #636E72; margin-bottom: 8rpx; }
-.ct-bar { height: 8rpx; background: #F0F0F0; border-radius: 4rpx; margin-bottom: 12rpx; }
-.ct-bar-fill { height: 100%; background: linear-gradient(90deg, #6C5CE7, #A29BFE); border-radius: 4rpx; transition: width 0.5s; }
+.ct-title { font-size: var(--font-md); font-weight: 500; color: var(--text-primary); }
+.ct-status { font-size: var(--font-xs); padding: 4rpx 12rpx; border-radius: 12rpx; }
+.ct-pending { background: var(--color-warning-light); color: var(--color-primary-dark); }
+.ct-active { background: var(--color-success-light); color: var(--color-success); }
+.ct-completed { background: var(--color-accent-light); color: var(--color-accent); }
+.ct-rejected { background: var(--color-error-light); color: var(--color-error); }
+.ct-body { display: flex; justify-content: space-between; font-size: 24rpx; color: var(--text-secondary); margin-bottom: 8rpx; }
+.ct-bar { height: 8rpx; background: var(--border-color); border-radius: 4rpx; margin-bottom: 12rpx; }
+.ct-bar-fill { height: 100%; background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light)); border-radius: 4rpx; transition: width 0.5s; }
 .ct-actions { display: flex; gap: 12rpx; }
 .redeem-item { display: flex; align-items: center; padding: 16rpx 0; border-bottom: 2rpx solid #F8F8F8; }
 .redeem-item:last-child { border-bottom: none; }
 .redeem-info { flex: 1; }
-.redeem-name { font-size: 26rpx; color: #2D3436; font-weight: 500; display: block; }
-.redeem-cost { font-size: 22rpx; color: #B2BEC3; }
+.redeem-name { font-size: var(--font-sm); color: var(--text-primary); font-weight: 500; display: block; }
+.redeem-cost { font-size: var(--font-xs); color: var(--text-hint); }
 .redeem-actions { display: flex; gap: 12rpx; }

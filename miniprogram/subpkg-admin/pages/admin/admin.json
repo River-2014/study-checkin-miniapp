@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "题库管理",
-  "usingComponents": {}
+  "usingComponents": {
+    "tab-switch": "/components/tab-switch/tab-switch"
+  }
 }

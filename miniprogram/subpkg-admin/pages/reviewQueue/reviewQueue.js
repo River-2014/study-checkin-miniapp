@@ -1,66 +1,67 @@
-// subpkg-admin/pages/reviewQueue/reviewQueue.js
+var adminGuard = require('../../utils/adminGuard');
+
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    questions: [],
+    loading: false,
+    reviewComment: ''
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-
+  onLoad: function() {
+    adminGuard.checkAdminPermission(this);
+    this.loadPending();
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
+  loadPending: function() {
+    var that = this;
+    that.setData({ loading: true });
+    wx.cloud.callFunction({
+      name: 'manageQuestions',
+      data: { action: 'search', status: 'pending', pageSize: 50 }
+    }).then(function(res) {
+      that.setData({ questions: (res.result || {}).list || [], loading: false });
+    }).catch(function() {
+      wx.showToast({ title: '加载失败', icon: 'none' });
+      that.setData({ loading: false });
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
+  approve: function(e) {
+    var id = e.currentTarget.dataset.id;
+    this.updateStatus([id], 'approved', '');
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
+  reject: function(e) {
+    var that = this;
+    var id = e.currentTarget.dataset.id;
+    wx.showModal({
+      title: '拒绝原因',
+      editable: true,
+      placeholderText: '请输入拒绝原因',
+      success: function(res) {
+        if (res.confirm) {
+          that.updateStatus([id], 'rejected', res.content || '未说明原因');
+        }
+      }
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
+  batchApprove: function() {
+    var ids = this.data.questions.map(function(q) { return q._id; });
+    if (ids.length === 0) return;
+    this.updateStatus(ids, 'approved', '');
   },
 
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  updateStatus: function(ids, status, comment) {
+    var that = this;
+    wx.cloud.callFunction({
+      name: 'manageQuestions',
+      data: { action: 'batchUpdate', questionIds: ids, updates: { status: status, reviewComment: comment } }
+    }).then(function() {
+      wx.showToast({ title: '操作成功', icon: 'success' });
+      that.loadPending();
+    }).catch(function() {
+      wx.showToast({ title: '操作失败', icon: 'none' });
+    });
   }
-})
+});

@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "错题本",
-  "usingComponents": {}
+  "usingComponents": {
+    "modal-sheet": "/components/modal-sheet/modal-sheet"
+  }
 }
